@@ -1,0 +1,80 @@
+<div class="detail-page">
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+
+  <ng-container *ngIf="!loading && lineup">
+    <div class="detail-header">
+      <button mat-icon-button routerLink="/lineups">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1 class="lineup-name">{{ lineup.name }}</h1>
+      <span
+        class="type-badge"
+        [style.background-color]="typeColors[lineup.utilityType]"
+      >{{ lineup.utilityType }}</span>
+    </div>
+
+    <mat-card class="detail-card">
+      <mat-card-header>
+        <mat-card-subtitle>
+          <mat-icon>map</mat-icon> {{ lineup.mapName }}
+          &nbsp;|&nbsp;
+          <mat-icon>people</mat-icon> {{ lineup.side }}
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <mat-divider></mat-divider>
+
+        <div class="detail-section">
+          <h3>Description</h3>
+          <p>{{ lineup.description || 'Aucune description' }}</p>
+        </div>
+
+        <div class="positions-section" *ngIf="lineup.throwPosition || lineup.aimPosition">
+          <div class="position-item" *ngIf="lineup.throwPosition">
+            <mat-icon color="primary">person_pin</mat-icon>
+            <div>
+              <strong>Position de lancer</strong>
+              <p>{{ lineup.throwPosition }}</p>
+            </div>
+          </div>
+          <div class="position-item" *ngIf="lineup.aimPosition">
+            <mat-icon color="accent">ads_click</mat-icon>
+            <div>
+              <strong>Point de visée</strong>
+              <p>{{ lineup.aimPosition }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="media-section">
+          <a *ngIf="lineup.imageUrl" [href]="lineup.imageUrl" target="_blank" mat-stroked-button>
+            <mat-icon>image</mat-icon> Voir l'image
+          </a>
+          <a *ngIf="lineup.videoUrl" [href]="lineup.videoUrl" target="_blank" mat-stroked-button color="warn">
+            <mat-icon>play_circle</mat-icon> Voir la vidéo
+          </a>
+        </div>
+
+        <div class="timestamps" *ngIf="lineup.createdAt">
+          <small>Créé le {{ lineup.createdAt | date:'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions class="actions">
+        <button mat-raised-button [color]="lineup.favorite ? 'warn' : 'primary'" (click)="toggleFavorite()">
+          <mat-icon>{{ lineup.favorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+          {{ lineup.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+        </button>
+        <button mat-stroked-button [routerLink]="['/lineups', lineup.id, 'edit']">
+          <mat-icon>edit</mat-icon> Modifier
+        </button>
+        <button mat-stroked-button color="warn" (click)="deleteLineup()">
+          <mat-icon>delete</mat-icon> Supprimer
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </ng-container>
+</div>

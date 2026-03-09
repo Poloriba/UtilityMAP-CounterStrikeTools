@@ -1,0 +1,94 @@
+<div class="form-page">
+  <div class="form-header">
+    <button mat-icon-button routerLink="/lineups">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ isEdit ? 'Modifier la lineup' : 'Nouvelle lineup' }}</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+
+  <mat-card *ngIf="!loading" class="form-card">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Map *</mat-label>
+            <mat-select formControlName="mapName">
+              <mat-option *ngFor="let m of maps" [value]="m">{{ m }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('mapName')?.hasError('required')">La map est obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Side *</mat-label>
+            <mat-select formControlName="side">
+              <mat-option *ngFor="let s of sides" [value]="s">{{ s }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('side')?.hasError('required')">Le side est obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Type *</mat-label>
+            <mat-select formControlName="utilityType">
+              <mat-option *ngFor="let t of types" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('utilityType')?.hasError('required')">Le type est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom *</mat-label>
+          <input matInput formControlName="name" placeholder="Ex: Window smoke depuis T spawn" />
+          <mat-error *ngIf="form.get('name')?.hasError('required')">Le nom est obligatoire</mat-error>
+          <mat-error *ngIf="form.get('name')?.hasError('minlength')">Minimum 2 caractères</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" rows="3"
+            placeholder="Décrivez la lineup..."></textarea>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Position de lancer</mat-label>
+            <mat-icon matPrefix>person_pin</mat-icon>
+            <input matInput formControlName="throwPosition" placeholder="Ex: T spawn ramp" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Point de visée</mat-label>
+            <mat-icon matPrefix>ads_click</mat-icon>
+            <input matInput formControlName="aimPosition" placeholder="Ex: Coin toit window" />
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>URL Image</mat-label>
+            <mat-icon matPrefix>image</mat-icon>
+            <input matInput formControlName="imageUrl" placeholder="https://..." />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>URL Vidéo</mat-label>
+            <mat-icon matPrefix>play_circle</mat-icon>
+            <input matInput formControlName="videoUrl" placeholder="https://youtube.com/..." />
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-stroked-button type="button" routerLink="/lineups">Annuler</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="saving">
+            <mat-spinner *ngIf="saving" diameter="18" style="display:inline-block; margin-right:8px"></mat-spinner>
+            <mat-icon *ngIf="!saving">save</mat-icon>
+            {{ isEdit ? 'Mettre à jour' : 'Créer la lineup' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

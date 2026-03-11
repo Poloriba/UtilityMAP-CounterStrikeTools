@@ -23,20 +23,37 @@
   <div class="map-viewer" *ngIf="selectedMap">
     <div class="map-display">
 
-      <!-- Image 2D de la map -->
-      <div class="map-image-wrapper" [style.background-color]="selectedMap.color">
+      <!-- Image 2D de la map + zone de drag -->
+      <div class="map-drag-zone" [style.background-color]="selectedMap.color">
         <img
           *ngIf="!imageError"
           [src]="selectedMap.radarUrl"
           [alt]="selectedMap.name + ' radar'"
           class="map-radar-img"
           (error)="onImageError()"
+          draggable="false"
         />
         <!-- Fallback si l'image ne charge pas -->
-        <div *ngIf="imageError" class="map-fallback" [style.background-color]="selectedMap.color">
+        <div *ngIf="imageError" class="map-fallback">
           <mat-icon>map</mat-icon>
           <span>{{ selectedMap.name }}</span>
           <small>Ajouter l'image dans assets/maps/{{ selectedMap.id }}.png</small>
+        </div>
+
+        <!-- Tokens joueurs -->
+        <div
+          *ngFor="let player of players"
+          class="player-token"
+          [class.ct]="player.side === 'CT'"
+          [class.t-side]="player.side === 'T'"
+          [style.left.%]="player.defaultX"
+          [style.top.%]="player.defaultY"
+          cdkDrag
+          cdkDragBoundary=".map-drag-zone"
+          [cdkDragFreeDragPosition]="dragPositions[player.id]"
+          [matTooltip]="player.side + ' · Joueur ' + player.number"
+        >
+          {{ player.number }}
         </div>
       </div>
 
@@ -65,6 +82,22 @@
             <mat-icon>add</mat-icon>
             Ajouter une lineup
           </button>
+          <button mat-stroked-button (click)="resetPlayers()" matTooltip="Remettre les joueurs en position initiale">
+            <mat-icon>replay</mat-icon>
+            Reset positions
+          </button>
+        </div>
+
+        <!-- Légende tokens -->
+        <div class="tokens-legend">
+          <div class="legend-item">
+            <span class="token-preview ct">1</span>
+            <span>CT (Contre-terroriste)</span>
+          </div>
+          <div class="legend-item">
+            <span class="token-preview t-side">1</span>
+            <span>T (Terroriste)</span>
+          </div>
         </div>
 
         <div class="map-id-hint">

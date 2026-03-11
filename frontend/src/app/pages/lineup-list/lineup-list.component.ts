@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
@@ -43,7 +43,7 @@ export class LineupListComponent implements OnInit {
     HE: '#388e3c'
   };
 
-  constructor(private lineupService: LineupService, private fb: FormBuilder) {
+  constructor(private lineupService: LineupService, private fb: FormBuilder, private route: ActivatedRoute) {
     this.filterForm = this.fb.group({
       map: [null],
       side: [null],
@@ -53,6 +53,11 @@ export class LineupListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Lire le query param ?map= venant du Playground
+    const mapParam = this.route.snapshot.queryParamMap.get('map');
+    if (mapParam) {
+      this.filterForm.patchValue({ map: mapParam });
+    }
     this.loadLineups();
     this.filterForm.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())

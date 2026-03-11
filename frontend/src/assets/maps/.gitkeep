@@ -1,0 +1,3 @@
+# Placer ici les images radar 2D des maps CS2
+# Format : {id}.png  (ex: de_mirage.png, de_inferno.png)
+# Ces images remplacent les URLs Steam CDN dans map.model.ts

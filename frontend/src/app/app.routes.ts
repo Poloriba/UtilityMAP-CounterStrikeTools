@@ -22,5 +22,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/lineup-form/lineup-form.component').then(m => m.LineupFormComponent)
   },
+  {
+    path: 'playground',
+    loadComponent: () =>
+      import('./pages/playground/playground.component').then(m => m.PlaygroundComponent)
+  },
   { path: '**', redirectTo: 'lineups' }
 ];

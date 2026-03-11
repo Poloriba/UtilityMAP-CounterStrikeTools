@@ -4,3 +4,12 @@ html, body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
   background-color: #f5f5f5;
 }
+
+// Fond sombre pour le playground
+.playground-page {
+  background-color: #111;
+  min-height: calc(100vh - 64px);
+  margin: -24px;
+  padding: 24px;
+  color: #eee;
+}

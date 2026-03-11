@@ -1,0 +1,78 @@
+<div class="playground-page">
+
+  <h1 class="page-title">
+    <mat-icon>map</mat-icon> Playground
+  </h1>
+
+  <!-- Sélecteur de maps -->
+  <div class="map-selector">
+    <button
+      *ngFor="let map of maps"
+      class="map-btn"
+      [class.selected]="selectedMap?.id === map.id"
+      [style.--map-color]="map.color"
+      (click)="selectMap(map)"
+      [matTooltip]="map.activeDuty ? 'Active Duty' : 'Hors pool'"
+    >
+      <span class="map-name">{{ map.name }}</span>
+      <span *ngIf="map.activeDuty" class="active-dot"></span>
+    </button>
+  </div>
+
+  <!-- Affichage de la map sélectionnée -->
+  <div class="map-viewer" *ngIf="selectedMap">
+    <div class="map-display">
+
+      <!-- Image 2D de la map -->
+      <div class="map-image-wrapper" [style.background-color]="selectedMap.color">
+        <img
+          *ngIf="!imageError"
+          [src]="selectedMap.radarUrl"
+          [alt]="selectedMap.name + ' radar'"
+          class="map-radar-img"
+          (error)="onImageError()"
+        />
+        <!-- Fallback si l'image ne charge pas -->
+        <div *ngIf="imageError" class="map-fallback" [style.background-color]="selectedMap.color">
+          <mat-icon>map</mat-icon>
+          <span>{{ selectedMap.name }}</span>
+          <small>Ajouter l'image dans assets/maps/{{ selectedMap.id }}.png</small>
+        </div>
+      </div>
+
+      <!-- Infos de la map -->
+      <div class="map-info">
+        <h2 class="map-title">{{ selectedMap.name }}</h2>
+
+        <div class="map-meta">
+          <span class="badge" [class.active]="selectedMap.activeDuty" [class.inactive]="!selectedMap.activeDuty">
+            <mat-icon>{{ selectedMap.activeDuty ? 'verified' : 'remove_circle' }}</mat-icon>
+            {{ selectedMap.activeDuty ? 'Active Duty' : 'Hors pool' }}
+          </span>
+        </div>
+
+        <div class="lineup-stat">
+          <mat-icon>gps_fixed</mat-icon>
+          <span><strong>{{ lineupCount }}</strong> lineup{{ lineupCount > 1 ? 's' : '' }} disponible{{ lineupCount > 1 ? 's' : '' }}</span>
+        </div>
+
+        <div class="map-actions">
+          <button mat-raised-button color="primary" (click)="goToLineups()">
+            <mat-icon>list</mat-icon>
+            Voir les lineups
+          </button>
+          <button mat-stroked-button routerLink="/lineups/new" [queryParams]="{ map: selectedMap.name }">
+            <mat-icon>add</mat-icon>
+            Ajouter une lineup
+          </button>
+        </div>
+
+        <div class="map-id-hint">
+          <mat-icon>info</mat-icon>
+          <span>{{ selectedMap.id }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

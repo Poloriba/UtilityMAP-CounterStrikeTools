@@ -55,6 +55,21 @@
         >
           {{ player.number }}
         </div>
+
+        <!-- Tokens grenades -->
+        <div
+          *ngFor="let grenade of grenades"
+          class="grenade-token"
+          [ngClass]="grenade.type"
+          [style.left.%]="grenade.defaultX"
+          [style.top.%]="grenade.defaultY"
+          cdkDrag
+          cdkDragBoundary=".map-drag-zone"
+          [cdkDragFreeDragPosition]="dragPositions[grenade.id]"
+          [matTooltip]="grenade.name"
+        >
+          {{ grenade.label }}
+        </div>
       </div>
 
       <!-- Infos de la map -->
@@ -97,6 +112,18 @@
           <div class="legend-item">
             <span class="token-preview t-side">1</span>
             <span>T (Terroriste)</span>
+          </div>
+          <div class="legend-separator">Grenades</div>
+          <div class="legend-item" *ngFor="let def of grenadeDefs">
+            <span class="token-preview grenade" [ngClass]="def.type">{{ def.label }}</span>
+            <span class="legend-name">{{ def.name }}</span>
+            <button
+              class="add-grenade-btn"
+              (click)="addGrenade(def.type)"
+              [matTooltip]="'Ajouter une ' + def.name"
+            >
+              <mat-icon>add</mat-icon>
+            </button>
           </div>
         </div>
 

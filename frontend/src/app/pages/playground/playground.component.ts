@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { DragDropModule, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,11 +18,28 @@ export interface PlayerToken {
   defaultY: number; // % depuis le haut du conteneur
 }
 
+export interface GrenadeToken {
+  id: string;
+  type: 'smoke' | 'flash' | 'molotov' | 'he';
+  label: string;
+  name: string;
+  defaultX: number;
+  defaultY: number;
+}
+
+const GRENADE_DEFS = [
+  { type: 'smoke'   as const, label: 'SMK', name: 'Smoke',      defaultX: 72, defaultY: 4  },
+  { type: 'flash'   as const, label: 'FLS', name: 'Flash',      defaultX: 84, defaultY: 4  },
+  { type: 'molotov' as const, label: 'MOL', name: 'Molotov',    defaultX: 72, defaultY: 14 },
+  { type: 'he'      as const, label: 'HE',  name: 'HE Grenade', defaultX: 84, defaultY: 14 },
+];
+
 @Component({
   selector: 'app-playground',
   standalone: true,
   imports: [
     CommonModule,
+    NgClass,
     RouterLink,
     DragDropModule,
     MatButtonModule, MatIconModule, MatChipsModule,
@@ -52,6 +69,10 @@ export class PlaygroundComponent implements OnInit {
     { id: 't5',  side: 'T',  number: 5, defaultX: 58, defaultY: 84 },
   ];
 
+  grenadeDefs = GRENADE_DEFS;
+  grenades: GrenadeToken[] = GRENADE_DEFS.map(d => ({ id: `${d.type}_1`, ...d }));
+  grenadeCounters: Record<string, number> = Object.fromEntries(GRENADE_DEFS.map(d => [d.type, 1]));
+
   dragPositions: Record<string, { x: number; y: number }> = {};
 
   constructor(private router: Router, private lineupService: LineupService) {}
@@ -65,11 +86,22 @@ export class PlaygroundComponent implements OnInit {
     // Créer de nouveaux objets à chaque fois pour forcer la détection de changement Angular
     const positions: Record<string, { x: number; y: number }> = {};
     this.players.forEach(p => positions[p.id] = { x: 0, y: 0 });
+    this.grenades.forEach(g => positions[g.id] = { x: 0, y: 0 });
     this.dragPositions = { ...positions };
   }
 
   resetPlayers(): void {
+    this.grenades = GRENADE_DEFS.map(d => ({ id: `${d.type}_1`, ...d }));
+    this.grenadeCounters = Object.fromEntries(GRENADE_DEFS.map(d => [d.type, 1]));
     this.initDragPositions();
+  }
+
+  addGrenade(type: GrenadeToken['type']): void {
+    const def = GRENADE_DEFS.find(d => d.type === type)!;
+    this.grenadeCounters[type]++;
+    const id = `${type}_${this.grenadeCounters[type]}`;
+    this.grenades = [...this.grenades, { id, ...def }];
+    this.dragPositions = { ...this.dragPositions, [id]: { x: 0, y: 0 } };
   }
 
   selectMap(map: GameMap): void {

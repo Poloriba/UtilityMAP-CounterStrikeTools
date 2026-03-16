@@ -283,6 +283,33 @@
     gap: 16px;
     color: #eee;
 
+    // Surcharge globale des boutons Material dans ce panneau
+    ::ng-deep {
+      .mat-mdc-button,
+      .mat-mdc-outlined-button,
+      .mat-mdc-stroked-button {
+        color: #ccc !important;
+        border-color: #555 !important;
+
+        .mat-icon { color: #ccc !important; }
+
+        &:hover:not([disabled]) {
+          color: white !important;
+          border-color: #888 !important;
+          background: rgba(255,255,255,0.06) !important;
+        }
+
+        &[disabled] {
+          color: #444 !important;
+          border-color: #333 !important;
+        }
+      }
+
+      mat-divider {
+        border-color: #333 !important;
+      }
+    }
+
     .map-title {
       font-size: 32px;
       margin: 0;
@@ -364,6 +391,61 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+
+      // Surcharge thème Material (fond blanc → fond sombre, texte noir → gris clair)
+      ::ng-deep {
+        .mat-mdc-form-field {
+          .mdc-text-field {
+            background: #1e1e1e;
+          }
+          .mdc-text-field--outlined:not(.mdc-text-field--disabled) {
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+              border-color: #444;
+            }
+          }
+          .mdc-text-field--outlined:not(.mdc-text-field--disabled):hover {
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+              border-color: #777;
+            }
+          }
+          .mat-mdc-select-value,
+          .mat-mdc-select-arrow,
+          .mdc-floating-label,
+          input.mat-mdc-input-element {
+            color: #ccc;
+          }
+          .mdc-floating-label--float-above {
+            color: #aaa;
+          }
+        }
+
+        // Options du dropdown
+        .mat-mdc-select-panel {
+          background: #1e1e1e;
+          .mat-mdc-option {
+            color: #ccc;
+            &:hover, &.mat-mdc-option-active {
+              background: #2a2a2a;
+            }
+          }
+        }
+
+        // Liste de sélection lineups
+        .mat-mdc-selection-list {
+          .mat-mdc-list-option {
+            color: #ccc;
+            --mdc-checkbox-unselected-icon-color: #777;
+            --mdc-checkbox-unselected-hover-icon-color: #aaa;
+            &:hover {
+              background: rgba(255,255,255,0.04);
+            }
+          }
+        }
+      }
 
       .exec-panel-title {
         display: flex;

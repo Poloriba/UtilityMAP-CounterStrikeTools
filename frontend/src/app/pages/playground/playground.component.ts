@@ -38,10 +38,10 @@ export interface GrenadeToken {
 }
 
 const GRENADE_DEFS = [
-  { type: 'smoke'   as const, label: 'SMK', name: 'Smoke',      defaultX: 72, defaultY: 4  },
-  { type: 'flash'   as const, label: 'FLS', name: 'Flash',      defaultX: 84, defaultY: 4  },
-  { type: 'molotov' as const, label: 'MOL', name: 'Molotov',    defaultX: 72, defaultY: 14 },
-  { type: 'he'      as const, label: 'HE',  name: 'HE Grenade', defaultX: 84, defaultY: 14 },
+  { type: 'smoke'   as const, label: 'SMK', name: 'Smoke',      defaultX: 70, defaultY: 4 },
+  { type: 'flash'   as const, label: 'FLS', name: 'Flash',      defaultX: 78, defaultY: 4 },
+  { type: 'molotov' as const, label: 'MOL', name: 'Molotov',    defaultX: 86, defaultY: 4 },
+  { type: 'he'      as const, label: 'HE',  name: 'HE Grenade', defaultX: 94, defaultY: 4 },
 ];
 
 @Component({

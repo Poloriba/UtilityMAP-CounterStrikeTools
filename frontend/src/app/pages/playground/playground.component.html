@@ -24,7 +24,7 @@
     <div class="map-display">
 
       <!-- Image 2D de la map + zone de drag -->
-      <div class="map-drag-zone" [style.background-color]="selectedMap.color">
+      <div #dragZone class="map-drag-zone" [class.link-mode]="selectedPlayerId !== null" [style.background-color]="selectedMap.color" (click)="onBackgroundClick()">
         <img
           *ngIf="!imageError"
           [src]="selectedMap.radarUrl"
@@ -46,12 +46,16 @@
           class="player-token"
           [class.ct]="player.side === 'CT'"
           [class.t-side]="player.side === 'T'"
+          [class.selected]="selectedPlayerId === player.id"
           [style.left.%]="player.defaultX"
           [style.top.%]="player.defaultY"
           cdkDrag
           cdkDragBoundary=".map-drag-zone"
           [cdkDragFreeDragPosition]="dragPositions[player.id]"
+          (cdkDragMoved)="onTokenMoved($event, player.id)"
+          (cdkDragEnded)="onTokenDropped($event, player.id)"
           [matTooltip]="player.side + ' · Joueur ' + player.number"
+          (click)="onPlayerClick(player.id); $event.stopPropagation()"
         >
           {{ player.number }}
         </div>
@@ -61,15 +65,50 @@
           *ngFor="let grenade of grenades"
           class="grenade-token"
           [ngClass]="grenade.type"
+          [class.link-target]="isLinkTarget(grenade.id)"
+          [class.linked]="isLinked(grenade.id)"
           [style.left.%]="grenade.defaultX"
           [style.top.%]="grenade.defaultY"
           cdkDrag
           cdkDragBoundary=".map-drag-zone"
           [cdkDragFreeDragPosition]="dragPositions[grenade.id]"
+          (cdkDragMoved)="onTokenMoved($event, grenade.id)"
+          (cdkDragEnded)="onTokenDropped($event, grenade.id)"
           [matTooltip]="grenade.name"
+          (click)="onGrenadeClick(grenade.id); $event.stopPropagation()"
         >
           {{ grenade.label }}
         </div>
+
+        <!-- Bandeaux d'instruction en mode lié -->
+        <div class="link-instruction" *ngIf="selectedPlayerId">
+          <mat-icon>ads_click</mat-icon>
+          Cliquez sur une grenade pour créer la flèche
+        </div>
+
+        <!-- SVG overlay : flèches joueur → grenade -->
+        <svg class="arrows-overlay">
+          <defs>
+            <marker id="arrowhead-ct" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#42a5f5"/>
+            </marker>
+            <marker id="arrowhead-t" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#ffa726"/>
+            </marker>
+          </defs>
+          <line
+            *ngFor="let link of links"
+            [attr.x1]="getTokenCenter(link.playerId).x"
+            [attr.y1]="getTokenCenter(link.playerId).y"
+            [attr.x2]="getTokenCenter(link.grenadeId).x"
+            [attr.y2]="getTokenCenter(link.grenadeId).y"
+            [attr.stroke]="getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726'"
+            stroke-width="2"
+            stroke-dasharray="6,3"
+            stroke-linecap="round"
+            [attr.marker-end]="getPlayerSide(link.playerId) === 'CT' ? 'url(#arrowhead-ct)' : 'url(#arrowhead-t)'"
+          />
+        </svg>
       </div>
 
       <!-- Infos de la map -->
@@ -97,11 +136,85 @@
             <mat-icon>add</mat-icon>
             Ajouter une lineup
           </button>
-          <button mat-stroked-button (click)="resetPlayers()" matTooltip="Remettre les joueurs en position initiale">
+          <button mat-stroked-button (click)="resetPlayers()" matTooltip="Remettre les jetons en position initiale">
             <mat-icon>replay</mat-icon>
             Reset positions
           </button>
+          <button mat-stroked-button (click)="clearLinks()" [disabled]="links.length === 0" matTooltip="Supprimer toutes les flèches">
+            <mat-icon>link_off</mat-icon>
+            Effacer les flèches
+          </button>
         </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- ========== PANEL EXEC ========== -->
+        <div class="exec-panel">
+          <div class="exec-panel-title">
+            <mat-icon>bolt</mat-icon>
+            <span>Execs</span>
+          </div>
+
+          <!-- Charger une exec existante -->
+          <mat-form-field appearance="outline" *ngIf="mapExecs.length > 0">
+            <mat-label>Charger une exec</mat-label>
+            <mat-select (selectionChange)="loadExec($event.value)">
+              <mat-option *ngFor="let exec of mapExecs" [value]="exec">
+                <span class="exec-option-name">{{ exec.name }}</span>
+                <span class="exec-option-count"> · {{ exec.lineups.length }} lineup{{ exec.lineups.length > 1 ? 's' : '' }}</span>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <p class="no-execs-hint" *ngIf="mapExecs.length === 0">Aucune exec sur cette map</p>
+
+          <!-- Sauvegarder -->
+          <mat-form-field appearance="outline">
+            <mat-label>Nom de l'exec</mat-label>
+            <input matInput [(ngModel)]="saveExecName" placeholder="ex: A site full execute">
+          </mat-form-field>
+
+          <!-- Sélection des lineups à associer -->
+          <div class="lineup-selector" *ngIf="mapLineups.length > 0">
+            <small class="selector-label">Lineups à associer :</small>
+            <mat-selection-list [(ngModel)]="selectedLineupIds" class="lineup-selection-list">
+              <mat-list-option
+                *ngFor="let lineup of mapLineups"
+                [value]="lineup.id"
+                checkboxPosition="before"
+              >
+                <span class="option-type-dot" [ngClass]="lineup.utilityType.toLowerCase()"></span>
+                {{ lineup.name }}
+              </mat-list-option>
+            </mat-selection-list>
+          </div>
+
+          <!-- Actions de sauvegarde -->
+          <div class="exec-save-actions">
+            <button mat-raised-button color="accent"
+              [disabled]="!saveExecName.trim() || execSaving"
+              (click)="saveExec()"
+              [matTooltip]="currentExecId ? 'Mettre à jour l\'exec chargée' : 'Créer une nouvelle exec'">
+              <mat-icon>{{ execSaving ? 'hourglass_empty' : 'save' }}</mat-icon>
+              {{ currentExecId ? 'Mettre à jour' : 'Sauvegarder' }}
+            </button>
+            <button mat-stroked-button
+              *ngIf="currentExecId"
+              [disabled]="!saveExecName.trim() || execSaving"
+              (click)="saveAsNewExec()"
+              matTooltip="Sauvegarder comme nouvelle exec">
+              <mat-icon>save_as</mat-icon>
+              Nouvelle
+            </button>
+            <button mat-icon-button color="warn"
+              *ngIf="currentExecId"
+              (click)="deleteCurrentExec()"
+              matTooltip="Supprimer cette exec">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
 
         <!-- Légende tokens -->
         <div class="tokens-legend">

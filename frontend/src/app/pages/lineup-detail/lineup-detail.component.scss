@@ -97,4 +97,35 @@
       padding: 16px;
     }
   }
+
+  // Section "Ajouter à une exec"
+  .add-to-exec-section {
+    margin-top: 24px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 20px;
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      margin: 0 0 16px;
+      color: #ffd740;
+
+      mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    }
+
+    .add-to-exec-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+
+      mat-form-field { flex: 1; min-width: 200px; }
+
+      .exec-lineup-count { font-size: 11px; color: #888; }
+    }
+  }
 }

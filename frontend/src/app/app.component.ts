@@ -19,6 +19,9 @@ import { MatIconModule } from '@angular/material/icon';
       <button mat-button routerLink="/playground">
         <mat-icon>map</mat-icon> Playground
       </button>
+      <button mat-button routerLink="/execs">
+        <mat-icon>bolt</mat-icon> Execs
+      </button>
       <button mat-raised-button color="accent" routerLink="/lineups/new">
         <mat-icon>add</mat-icon> Nouvelle
       </button>

@@ -76,5 +76,32 @@
         </button>
       </mat-card-actions>
     </mat-card>
+
+    <!-- Section : Ajouter à une exec -->
+    <div class="add-to-exec-section" *ngIf="mapExecs.length > 0">
+      <h3 class="section-title">
+        <mat-icon>bolt</mat-icon>
+        Ajouter à une exec
+      </h3>
+      <div class="add-to-exec-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Choisir une exec</mat-label>
+          <mat-select [(ngModel)]="selectedExecId">
+            <mat-option [value]="null">— Sélectionner —</mat-option>
+            <mat-option *ngFor="let exec of mapExecs" [value]="exec.id">
+              {{ exec.name }}
+              <span class="exec-lineup-count"> ({{ exec.lineups.length }} lineup{{ exec.lineups.length > 1 ? 's' : '' }})</span>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-raised-button color="accent"
+          [disabled]="!selectedExecId"
+          (click)="addToExec()">
+          <mat-icon>add_link</mat-icon>
+          Associer
+        </button>
+      </div>
+    </div>
+
   </ng-container>
 </div>

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,17 +10,23 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Lineup } from '../../models/lineup.model';
+import { Exec } from '../../models/exec.model';
 import { LineupService } from '../../services/lineup.service';
 import { FavoriteService } from '../../services/favorite.service';
+import { ExecService } from '../../services/exec.service';
 
 @Component({
   selector: 'app-lineup-detail',
   standalone: true,
   imports: [
-    CommonModule, RouterLink,
+    CommonModule, RouterLink, FormsModule,
     MatCardModule, MatButtonModule, MatIconModule, MatChipsModule,
-    MatProgressSpinnerModule, MatDividerModule, MatSnackBarModule, MatDialogModule
+    MatProgressSpinnerModule, MatDividerModule, MatSnackBarModule, MatDialogModule,
+    MatFormFieldModule, MatSelectModule, MatTooltipModule
   ],
   templateUrl: './lineup-detail.component.html',
   styleUrls: ['./lineup-detail.component.scss']
@@ -27,6 +34,8 @@ import { FavoriteService } from '../../services/favorite.service';
 export class LineupDetailComponent implements OnInit {
   lineup?: Lineup;
   loading = false;
+  mapExecs: Exec[] = [];
+  selectedExecId: string | null = null;
 
   typeColors: Record<string, string> = {
     SMOKE: '#607d8b',
@@ -40,6 +49,7 @@ export class LineupDetailComponent implements OnInit {
     private router: Router,
     private lineupService: LineupService,
     private favoriteService: FavoriteService,
+    private execService: ExecService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {}
@@ -49,7 +59,13 @@ export class LineupDetailComponent implements OnInit {
     if (id) {
       this.loading = true;
       this.lineupService.getById(id).subscribe({
-        next: lineup => { this.lineup = lineup; this.loading = false; },
+        next: lineup => {
+          this.lineup = lineup;
+          this.loading = false;
+          this.execService.getAll(lineup.mapName).subscribe({
+            next: execs => this.mapExecs = execs
+          });
+        },
         error: () => {
           this.snackBar.open('Lineup introuvable', 'Fermer', { duration: 3000 });
           this.router.navigate(['/lineups']);
@@ -82,6 +98,19 @@ export class LineupDetailComponent implements OnInit {
         this.snackBar.open('Lineup supprimée', '', { duration: 2000 });
         this.router.navigate(['/lineups']);
       }
+    });
+  }
+
+  addToExec(): void {
+    if (!this.lineup || !this.selectedExecId) return;
+    this.execService.addLineup(this.selectedExecId, this.lineup.id).subscribe({
+      next: updated => {
+        const exec = this.mapExecs.find(e => e.id === updated.id);
+        if (exec) exec.lineups = updated.lineups;
+        this.snackBar.open('Lineup ajoutée à l\'exec !', 'Fermer', { duration: 2500 });
+        this.selectedExecId = null;
+      },
+      error: () => this.snackBar.open('Erreur lors de l\'ajout', 'Fermer', { duration: 3000 })
     });
   }
 }

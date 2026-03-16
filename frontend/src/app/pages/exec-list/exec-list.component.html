@@ -1,0 +1,81 @@
+<div class="exec-list-page">
+
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>bolt</mat-icon> Execs sauvegardées
+    </h1>
+    <button mat-raised-button color="primary" routerLink="/playground">
+      <mat-icon>map</mat-icon>
+      Aller au Playground
+    </button>
+  </div>
+
+  <!-- Filtre par map -->
+  <div class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Filtrer par map</mat-label>
+      <mat-select [(ngModel)]="selectedMap" (ngModelChange)="loadExecs()">
+        <mat-option value="">Toutes les maps</mat-option>
+        <mat-option *ngFor="let map of maps" [value]="map.name">{{ map.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-wrapper" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Liste vide -->
+  <div class="empty-state" *ngIf="!loading && execs.length === 0">
+    <mat-icon>folder_open</mat-icon>
+    <p>Aucune exec trouvée</p>
+    <small>Sauvegardez une disposition depuis le Playground</small>
+  </div>
+
+  <!-- Cards exec -->
+  <div class="exec-grid" *ngIf="!loading && execs.length > 0">
+    <mat-card class="exec-card" *ngFor="let exec of execs">
+      <mat-card-header>
+        <mat-card-title>{{ exec.name }}</mat-card-title>
+        <mat-card-subtitle>
+          <mat-icon class="map-icon">map</mat-icon>
+          {{ exec.mapName }}
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="exec-meta">
+          <span class="lineup-count">
+            <mat-icon>gps_fixed</mat-icon>
+            {{ exec.lineups.length }} lineup{{ exec.lineups.length > 1 ? 's' : '' }} associée{{ exec.lineups.length > 1 ? 's' : '' }}
+          </span>
+          <span class="created-date" *ngIf="exec.createdAt">
+            <mat-icon>schedule</mat-icon>
+            {{ exec.createdAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
+        </div>
+
+        <!-- Lineups associées -->
+        <div class="lineup-chips" *ngIf="exec.lineups.length > 0">
+          <mat-chip *ngFor="let lineup of exec.lineups" class="lineup-chip" [ngClass]="lineup.utilityType.toLowerCase()">
+            {{ lineup.name }}
+          </mat-chip>
+        </div>
+      </mat-card-content>
+
+      <mat-divider></mat-divider>
+
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="openInPlayground(exec)">
+          <mat-icon>open_in_new</mat-icon>
+          Ouvrir dans le Playground
+        </button>
+        <button mat-icon-button color="warn" (click)="delete(exec)" matTooltip="Supprimer cette exec">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+</div>

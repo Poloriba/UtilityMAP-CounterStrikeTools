@@ -27,5 +27,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/playground/playground.component').then(m => m.PlaygroundComponent)
   },
+  {
+    path: 'execs',
+    loadComponent: () =>
+      import('./pages/exec-list/exec-list.component').then(m => m.ExecListComponent)
+  },
   { path: '**', redirectTo: 'lineups' }
 ];

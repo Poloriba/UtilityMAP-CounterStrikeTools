@@ -14,35 +14,35 @@ export const CS2_MAPS: GameMap[] = [
     id: 'de_mirage',
     name: 'Mirage',
     radarUrl: 'assets/maps/de_mirage.png',
-    color: '#c8a96e',
+    color: '#5d7a5d',
     activeDuty: true
   },
   {
     id: 'de_inferno',
     name: 'Inferno',
     radarUrl: 'assets/maps/de_inferno.png',
-    color: '#e8a04a',
+    color: '#5d7a5d',
     activeDuty: true
   },
   {
     id: 'de_ancient',
     name: 'Ancient',
     radarUrl: 'assets/maps/de_ancient.png',
-    color: '#8b6f4e',
+    color: '#5d7a5d',
     activeDuty: true
   },
   {
     id: 'de_anubis',
     name: 'Anubis',
     radarUrl: 'assets/maps/de_anubis.png',
-    color: '#c4a882',
+    color: '#5d7a5d',
     activeDuty: true
   },
   {
     id: 'de_dust2',
     name: 'Dust2',
     radarUrl: 'assets/maps/de_dust.png',
-    color: '#deb887',
+    color: '#5d7a5d',
     activeDuty: false
   },
   {

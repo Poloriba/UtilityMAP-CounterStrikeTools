@@ -158,6 +158,13 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     this.selectedMap = map;
     this.imageError = false;
     this.lineupCount = 0;
+    this.links = [];
+    this.selectedPlayerId = null;
+    this.currentExecId = null;
+    this.saveExecName = '';
+    this.selectedLineupIds = [];
+    this.grenades = GRENADE_DEFS.map(d => ({ id: `${d.type}_1`, ...d }));
+    this.grenadeCounters = Object.fromEntries(GRENADE_DEFS.map(d => [d.type, 1]));
     this.initDragPositions();
     this.lineupService.getAll({ map: map.name }).subscribe({
       next: lineups => this.lineupCount = lineups.length

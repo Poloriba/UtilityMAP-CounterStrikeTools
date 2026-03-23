@@ -31,12 +31,14 @@ import { ExecService } from '../../services/exec.service';
   templateUrl: './lineup-detail.component.html',
   styleUrls: ['./lineup-detail.component.scss']
 })
+/** Page de détail d'une lineup : affichage, favori, édition, suppression, ajout à une exec */
 export class LineupDetailComponent implements OnInit {
-  lineup?: Lineup;
-  loading = false;
-  mapExecs: Exec[] = [];
-  selectedExecId: string | null = null;
+  lineup?: Lineup;                    // lineup chargée depuis l'API
+  loading = false;                    // indicateur de chargement initial
+  mapExecs: Exec[] = [];              // execs disponibles sur la même map (pour l'association)
+  selectedExecId: string | null = null; // exec sélectionnée dans le dropdown d'association
 
+  // Couleurs associées à chaque type de grenade (utilisées dans le template)
   typeColors: Record<string, string> = {
     SMOKE: '#607d8b',
     FLASH: '#fbc02d',
@@ -58,6 +60,7 @@ export class LineupDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loading = true;
+      // Charge la lineup puis les execs disponibles sur la même map
       this.lineupService.getById(id).subscribe({
         next: lineup => {
           this.lineup = lineup;
@@ -74,6 +77,7 @@ export class LineupDetailComponent implements OnInit {
     }
   }
 
+  // Ajoute ou retire la lineup des favoris de l'utilisateur courant
   toggleFavorite(): void {
     if (!this.lineup) return;
     const action$ = this.lineup.favorite
@@ -91,6 +95,7 @@ export class LineupDetailComponent implements OnInit {
     });
   }
 
+  // Supprime la lineup après confirmation et retourne à la liste
   deleteLineup(): void {
     if (!this.lineup || !confirm(`Supprimer la lineup "${this.lineup.name}" ?`)) return;
     this.lineupService.delete(this.lineup.id).subscribe({
@@ -101,6 +106,7 @@ export class LineupDetailComponent implements OnInit {
     });
   }
 
+  // Associe cette lineup à l'exec sélectionnée dans le dropdown
   addToExec(): void {
     if (!this.lineup || !this.selectedExecId) return;
     this.execService.addLineup(this.selectedExecId, this.lineup.id).subscribe({

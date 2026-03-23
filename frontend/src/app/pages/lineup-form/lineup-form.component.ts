@@ -24,12 +24,13 @@ import { LineupService } from '../../services/lineup.service';
   templateUrl: './lineup-form.component.html',
   styleUrls: ['./lineup-form.component.scss']
 })
+/** Formulaire de création et d'édition d'une lineup (mode déterminé par la présence du segment 'edit' dans l'URL) */
 export class LineupFormComponent implements OnInit {
-  form: FormGroup;
-  isEdit = false;
-  lineupId?: string;
-  loading = false;
-  saving = false;
+  form: FormGroup;     // formulaire réactif principal
+  isEdit = false;      // true si on modifie une lineup existante, false si on en crée une nouvelle
+  lineupId?: string;   // ID de la lineup à modifier (undefined en mode création)
+  loading = false;     // true pendant le chargement de la lineup existante en mode édition
+  saving = false;      // true pendant l'envoi du formulaire
 
   maps = ['Mirage', 'Inferno', 'Dust2', 'Nuke', 'Vertigo', 'Anubis', 'Ancient'];
   sides: Side[] = ['T', 'CT'];
@@ -56,9 +57,11 @@ export class LineupFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Détermine le mode (création ou édition) en inspectant l'URL
     this.lineupId = this.route.snapshot.paramMap.get('id') ?? undefined;
     this.isEdit = !!this.lineupId && this.route.snapshot.url.some(s => s.path === 'edit');
 
+    // En mode édition, charge la lineup et pré-remplit le formulaire
     if (this.isEdit && this.lineupId) {
       this.loading = true;
       this.lineupService.getById(this.lineupId).subscribe({
@@ -74,9 +77,10 @@ export class LineupFormComponent implements OnInit {
     }
   }
 
+  // Soumet le formulaire : crée ou met à jour la lineup, puis redirige vers la page de détail
   submit(): void {
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
+      this.form.markAllAsTouched(); // affiche les erreurs de validation
       return;
     }
     this.saving = true;

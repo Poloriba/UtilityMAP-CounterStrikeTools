@@ -28,11 +28,12 @@ import { CS2_MAPS } from '../../models/map.model';
   templateUrl: './exec-list.component.html',
   styleUrls: ['./exec-list.component.scss']
 })
+/** Page listant toutes les execs sauvegardées, avec filtre par map */
 export class ExecListComponent implements OnInit {
-  execs: Exec[] = [];
-  loading = false;
-  selectedMap: string = '';
-  maps = CS2_MAPS;
+  execs: Exec[] = [];      // liste des execs affichées
+  loading = false;          // indicateur de chargement
+  selectedMap: string = ''; // filtre map sélectionné (vide = toutes)
+  maps = CS2_MAPS;          // liste des maps pour le filtre
 
   constructor(
     private execService: ExecService,
@@ -44,6 +45,7 @@ export class ExecListComponent implements OnInit {
     this.loadExecs();
   }
 
+  // Charge les execs depuis l'API en appliquant le filtre map courant
   loadExecs(): void {
     this.loading = true;
     this.execService.getAll(this.selectedMap || undefined).subscribe({
@@ -52,10 +54,12 @@ export class ExecListComponent implements OnInit {
     });
   }
 
+  // Navigue vers le Playground en passant l'ID de l'exec dans l'URL (?exec=id)
   openInPlayground(exec: Exec): void {
     this.router.navigate(['/playground'], { queryParams: { exec: exec.id } });
   }
 
+  // Supprime une exec après confirmation
   delete(exec: Exec): void {
     if (!confirm(`Supprimer l'exec "${exec.name}" ?`)) return;
     this.execService.delete(exec.id).subscribe({

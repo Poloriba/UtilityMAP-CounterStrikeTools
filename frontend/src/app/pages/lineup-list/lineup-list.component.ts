@@ -27,15 +27,17 @@ import { LineupService } from '../../services/lineup.service';
   templateUrl: './lineup-list.component.html',
   styleUrls: ['./lineup-list.component.scss']
 })
+/** Page listant toutes les lineups, avec filtres combinables (map, côté, type, recherche textuelle) */
 export class LineupListComponent implements OnInit {
-  lineups: Lineup[] = [];
-  loading = false;
-  filterForm: FormGroup;
+  lineups: Lineup[] = [];  // résultats affichés
+  loading = false;          // indicateur de chargement
+  filterForm: FormGroup;    // formulaire réactif des filtres
 
   maps = ['Mirage', 'Inferno', 'Dust2', 'Nuke', 'Vertigo', 'Anubis', 'Ancient'];
   sides: Side[] = ['T', 'CT'];
   types: UtilityType[] = ['SMOKE', 'FLASH', 'MOLOTOV', 'HE'];
 
+  // Couleurs associées à chaque type (utilisées pour les badges dans le template)
   typeColors: Record<UtilityType, string> = {
     SMOKE: '#607d8b',
     FLASH: '#fbc02d',
@@ -53,17 +55,19 @@ export class LineupListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Lire le query param ?map= venant du Playground
+    // Pré-remplit le filtre map depuis le query param ?map= (navigation depuis le Playground)
     const mapParam = this.route.snapshot.queryParamMap.get('map');
     if (mapParam) {
       this.filterForm.patchValue({ map: mapParam });
     }
     this.loadLineups();
+    // Recharge automatiquement à chaque changement de filtre (avec debounce pour la recherche texte)
     this.filterForm.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(() => this.loadLineups());
   }
 
+  // Charge les lineups en appliquant les filtres actifs du formulaire
   loadLineups(): void {
     this.loading = true;
     const { map, side, type, search } = this.filterForm.value;
@@ -79,6 +83,7 @@ export class LineupListComponent implements OnInit {
     });
   }
 
+  // Réinitialise tous les filtres à leurs valeurs par défaut
   resetFilters(): void {
     this.filterForm.reset({ map: null, side: null, type: null, search: '' });
   }

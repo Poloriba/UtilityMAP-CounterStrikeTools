@@ -92,12 +92,25 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
 
   // Référence native à l'élément HTML de la zone de drag (pour calculer les coordonnées SVG)
   @ViewChild('dragZone') dragZoneRef!: ElementRef<HTMLElement>;
+  // Référence à l'entièreté de l'affichage map (radar + jetons + flèches) utilisée pour l'export PNG
+  @ViewChild('mapDisplay') mapDisplayRef!: ElementRef<HTMLElement>;
 
   dragPositions: Record<string, { x: number; y: number }> = {}; // offset CDK de chaque jeton après un drop
   livePositions: Record<string, { x: number; y: number }> = {}; // offset en temps réel pendant le drag (pour les flèches)
   selectedPlayerId: string | null = null; // ID du joueur sélectionné en mode liaison
   links: Array<{ playerId: string; grenadeId: string }> = []; // flèches joueur → grenade dessinées
+  deadPlayerIds: string[] = []; // IDs des joueurs actuellement éliminés (retirés du plateau)
   private _dragDistance = 0; // distance parcourue lors du dernier geste (pour distinguer clic et drag)
+
+  // Joueurs encore en vie sur le plateau (filtrés en temps réel)
+  get alivePlayers(): PlayerToken[] {
+    return this.players.filter(p => !this.deadPlayerIds.includes(p.id));
+  }
+
+  // Joueurs éliminés, affichés dans le banc pour pouvoir les réanimer
+  get deadPlayers(): PlayerToken[] {
+    return this.players.filter(p => this.deadPlayerIds.includes(p.id));
+  }
 
   // --- État du panneau Exec ---
   mapExecs: Exec[] = [];          // execs sauvegardées pour la map courante
@@ -145,6 +158,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     this.grenades = GRENADE_DEFS.map(d => ({ id: `${d.type}_1`, ...d }));
     this.grenadeCounters = Object.fromEntries(GRENADE_DEFS.map(d => [d.type, 1]));
     this.links = [];
+    this.deadPlayerIds = [];
     this.selectedPlayerId = null;
     this.currentExecId = null;
     this.saveExecName = '';
@@ -162,12 +176,43 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     this.livePositions = { ...this.livePositions, [id]: { x: 0, y: 0 } };
   }
 
+  // Supprime un jeton grenade du plateau et nettoie les flèches qui le relient
+  removeGrenade(id: string): void {
+    this.grenades = this.grenades.filter(g => g.id !== id);
+    this.links = this.links.filter(l => l.grenadeId !== id);
+    const { [id]: _dp, ...restDp } = this.dragPositions;
+    const { [id]: _lp, ...restLp } = this.livePositions;
+    this.dragPositions = restDp;
+    this.livePositions = restLp;
+    if (this.selectedPlayerId) {
+      // annule la sélection si la grenade ciblée vient d'être supprimée
+      this.selectedPlayerId = null;
+    }
+  }
+
+  // Retire un joueur du plateau (éliminé) et supprime ses flèches
+  killPlayer(id: string): void {
+    if (!this.deadPlayerIds.includes(id)) {
+      this.deadPlayerIds = [...this.deadPlayerIds, id];
+    }
+    this.links = this.links.filter(l => l.playerId !== id);
+    if (this.selectedPlayerId === id) this.selectedPlayerId = null;
+  }
+
+  // Remet un joueur éliminé en jeu, à sa position par défaut
+  revivePlayer(id: string): void {
+    this.deadPlayerIds = this.deadPlayerIds.filter(pid => pid !== id);
+    this.dragPositions = { ...this.dragPositions, [id]: { x: 0, y: 0 } };
+    this.livePositions = { ...this.livePositions, [id]: { x: 0, y: 0 } };
+  }
+
   // Change la map active : remet tout à zéro (jetons, grenades, flèches, exec) et charge les données de la nouvelle map
   selectMap(map: GameMap): void {
     this.selectedMap = map;
     this.imageError = false;
     this.lineupCount = 0;
     this.links = [];
+    this.deadPlayerIds = [];
     this.selectedPlayerId = null;
     this.currentExecId = null;
     this.saveExecName = '';
@@ -316,6 +361,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     this.dragPositions = { ...snapshot.dragPositions };
     this.livePositions = { ...snapshot.dragPositions }; // idem dragPositions au départ
     this.links = [...snapshot.links];
+    this.deadPlayerIds = [...(snapshot.deadPlayerIds ?? [])];
     this.selectedPlayerId = null;
 
     // Recharge le contexte du panneau exec
@@ -327,19 +373,20 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     this.loadLineupsForMap(map.name);
   }
 
-  // Sérialise l'état actuel du plateau en JSON (positions, grenades, flèches) pour la sauvegarde
+  // Sérialise l'état actuel du plateau en JSON (positions, grenades, flèches, éliminés) pour la sauvegarde
   buildSnapshot(): string {
     const snapshot: ExecSnapshot = {
       dragPositions: { ...this.dragPositions },
       grenadeCounters: { ...this.grenadeCounters },
       grenades: this.grenades.map(g => ({ ...g })),
-      links: [...this.links]
+      links: [...this.links],
+      deadPlayerIds: [...this.deadPlayerIds]
     };
     return JSON.stringify(snapshot);
   }
 
   // Sauvegarde l'exec courante : mise à jour si currentExecId existe, création sinon
-  saveExec(): void {
+  saveExec(successMessage = 'Exec sauvegardée !'): void {
     if (!this.saveExecName.trim() || !this.selectedMap) return;
     this.execSaving = true;
     const request: ExecRequest = {
@@ -358,7 +405,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
         this.currentExecId = saved.id;
         this.execSaving = false;
         this.loadExecsForMap(this.selectedMap!.name);
-        this.snackBar.open('Exec sauvegardée !', 'Fermer', { duration: 2500 });
+        this.snackBar.open(successMessage, 'Fermer', { duration: 2500 });
       },
       error: () => {
         this.execSaving = false;
@@ -371,6 +418,15 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
   saveAsNewExec(): void {
     this.currentExecId = null;
     this.saveExec();
+  }
+
+  // Duplique l'exec courante : préfixe le nom avec "Copie de" et crée une nouvelle exec
+  duplicateCurrentExec(): void {
+    if (!this.currentExecId) return;
+    const originalName = this.saveExecName;
+    this.saveExecName = `Copie de ${originalName}`;
+    this.currentExecId = null; // force la création d'une nouvelle exec
+    this.saveExec(`« Copie de ${originalName} » créée !`);
   }
 
   // Supprime l'exec courante après confirmation et remet le panneau à vide
@@ -386,5 +442,168 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
         this.snackBar.open('Exec supprimée', 'Fermer', { duration: 2500 });
       }
     });
+  }
+
+  // Couleurs des grenades pour l'export canvas
+  private readonly GRENADE_COLORS: Record<string, string> = {
+    smoke: '#607d8b', flash: '#fbc02d', molotov: '#e64a19', he: '#388e3c'
+  };
+
+  // Dessine un jeton rond (joueur) sur le canvas
+  private drawPlayerToken(ctx: CanvasRenderingContext2D, player: PlayerToken, x: number, y: number, size: number): void {
+    const cx = x + size / 2;
+    const cy = y + size / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = player.side === 'CT' ? '#1565c0' : '#bf360c';
+    ctx.fill();
+    ctx.strokeStyle = player.side === 'CT' ? '#42a5f5' : '#ffa726';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${size * 0.45}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(player.number), cx, cy);
+    ctx.restore();
+  }
+
+  // Dessine un jeton carré arrondi (grenade) sur le canvas
+  private drawGrenadeToken(ctx: CanvasRenderingContext2D, grenade: GrenadeToken, x: number, y: number, size: number): void {
+    const r = 6;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + size - r, y);   ctx.arcTo(x + size, y, x + size, y + r, r);
+    ctx.lineTo(x + size, y + size - r); ctx.arcTo(x + size, y + size, x + size - r, y + size, r);
+    ctx.lineTo(x + r, y + size);   ctx.arcTo(x, y + size, x, y + size - r, r);
+    ctx.lineTo(x, y + r);          ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+    ctx.fillStyle = this.GRENADE_COLORS[grenade.type] ?? '#888';
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${size * 0.35}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(grenade.label, x + size / 2, y + size / 2);
+    ctx.restore();
+  }
+
+  // Dessine une flèche en pointillés entre deux points sur le canvas
+  private drawArrow(ctx: CanvasRenderingContext2D, from: {x: number, y: number}, to: {x: number, y: number}, color: string): void {
+    const angle = Math.atan2(to.y - from.y, to.x - from.x);
+    const headLen = 10;
+    // Raccourcit la ligne pour ne pas passer sous la pointe
+    const endX = to.x - Math.cos(angle) * headLen * 0.5;
+    const endY = to.y - Math.sin(angle) * headLen * 0.5;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 3]);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    // Pointe pleine
+    ctx.setLineDash([]);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.translate(to.x, to.y);
+    ctx.rotate(angle);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-headLen, -headLen / 2.5);
+    ctx.lineTo(-headLen, headLen / 2.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Génère et télécharge un PNG du plateau en dessinant manuellement sur un canvas.
+  // On réutilise exactement les mêmes données de position (livePositions + defaultX/Y)
+  // que getTokenCenter() pour garantir une correspondance parfaite avec l'affichage.
+  exporting = false;
+  async exportPng(): Promise<void> {
+    if (!this.dragZoneRef) return;
+    this.exporting = true;
+
+    try {
+      const zone = this.dragZoneRef.nativeElement;
+      const w = zone.offsetWidth;
+      const h = zone.offsetHeight;
+      const scale = 2; // double résolution (rendu net sur écran Retina)
+      const TOKEN_SIZE = 32;
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = w * scale;
+      canvas.height = h * scale;
+      const ctx = canvas.getContext('2d')!;
+      ctx.scale(scale, scale);
+
+      // 1. Fond coloré de la map
+      ctx.fillStyle = this.selectedMap?.color ?? '#1a1a2e';
+      ctx.fillRect(0, 0, w, h);
+
+      // 2. Image radar (chargée de façon asynchrone)
+      if (!this.imageError && this.selectedMap) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        await new Promise<void>(resolve => {
+          img.onload  = () => resolve();
+          img.onerror = () => resolve(); // on continue même sans l'image
+          img.src = this.selectedMap!.radarUrl;
+        });
+        if (img.complete && img.naturalWidth > 0) {
+          // object-fit: contain — même comportement que le CSS
+          const scale_img = Math.min(w / img.naturalWidth, h / img.naturalHeight);
+          const dw = img.naturalWidth  * scale_img;
+          const dh = img.naturalHeight * scale_img;
+          const dx = (w - dw) / 2;
+          const dy = (h - dh) / 2;
+          ctx.drawImage(img, dx, dy, dw, dh);
+        }
+      }
+
+      // 3. Flèches (dessinées sous les jetons)
+      for (const link of this.links) {
+        const from  = this.getTokenCenter(link.playerId);
+        const to    = this.getTokenCenter(link.grenadeId);
+        const color = this.getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726';
+        this.drawArrow(ctx, from, to, color);
+      }
+
+      // 4. Jetons joueurs vivants uniquement
+      for (const player of this.alivePlayers) {
+        const live = this.livePositions[player.id] ?? { x: 0, y: 0 };
+        const x = (player.defaultX / 100) * w + live.x;
+        const y = (player.defaultY / 100) * h + live.y;
+        this.drawPlayerToken(ctx, player, x, y, TOKEN_SIZE);
+      }
+
+      // 5. Jetons grenades
+      for (const grenade of this.grenades) {
+        const live = this.livePositions[grenade.id] ?? { x: 0, y: 0 };
+        const x = (grenade.defaultX / 100) * w + live.x;
+        const y = (grenade.defaultY / 100) * h + live.y;
+        this.drawGrenadeToken(ctx, grenade, x, y, TOKEN_SIZE);
+      }
+
+      // 6. Téléchargement
+      const mapName  = this.selectedMap?.name ?? 'map';
+      const execName = this.saveExecName.trim() || 'exec';
+      const safeName = `${mapName}_${execName}`.replace(/[^a-z0-9_\-]/gi, '_');
+      const link = document.createElement('a');
+      link.download = `${safeName}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      this.snackBar.open('Export PNG téléchargé !', 'Fermer', { duration: 2500 });
+    } catch (err) {
+      console.error('Erreur export PNG', err);
+      this.snackBar.open('Erreur lors de l\'export', 'Fermer', { duration: 3000 });
+    } finally {
+      this.exporting = false;
+    }
   }
 }

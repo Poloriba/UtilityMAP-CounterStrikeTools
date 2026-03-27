@@ -14,11 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@SuppressWarnings("null")
 public class ExecService {
 
     private final ExecRepository execRepository;
@@ -54,7 +54,8 @@ public class ExecService {
         exec.setMapName(request.getMapName());
         exec.setSnapshotJson(request.getSnapshotJson());
         exec.setLineups(resolveLineups(request.getLineupIds()));
-        return ExecResponse.from(execRepository.save(exec));
+        Exec savedExec = execRepository.save(exec);
+        return ExecResponse.from(savedExec);
     }
 
     public void delete(UUID id) {
@@ -93,6 +94,6 @@ public class ExecService {
         return lineupIds.stream()
                 .map(lid -> lineupRepository.findById(lid)
                         .orElseThrow(() -> new EntityNotFoundException("Lineup introuvable : " + lid)))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

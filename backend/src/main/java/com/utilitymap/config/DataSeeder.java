@@ -6,14 +6,14 @@ import com.utilitymap.entity.UtilityLineup;
 import com.utilitymap.entity.UtilityType;
 import com.utilitymap.repository.AppUserRepository;
 import com.utilitymap.repository.UtilityLineupRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+@Slf4j
 @Configuration
-@RequiredArgsConstructor
 public class DataSeeder {
 
     @Bean
@@ -23,10 +23,13 @@ public class DataSeeder {
             if (lineupRepo.count() > 0) return;
 
             // Seed user
-            AppUser user = userRepo.save(AppUser.builder().username("player1").build());
+            AppUser user = AppUser.builder().username("player1").build();
+            if (user != null) {
+                userRepo.save(user);
+            }
 
             // Seed lineups
-            lineupRepo.save(UtilityLineup.builder()
+            UtilityLineup lineup1 = UtilityLineup.builder()
                     .mapName("Mirage")
                     .side(Side.T)
                     .utilityType(UtilityType.SMOKE)
@@ -34,9 +37,12 @@ public class DataSeeder {
                     .description("Smoke depuis le spawn T vers window CT")
                     .throwPosition("T spawn ramp")
                     .aimPosition("Coin toit window")
-                    .build());
+                    .build();
+            if (lineup1 != null) {
+                lineupRepo.save(lineup1);
+            }
 
-            lineupRepo.save(UtilityLineup.builder()
+            UtilityLineup lineup2 = UtilityLineup.builder()
                     .mapName("Mirage")
                     .side(Side.T)
                     .utilityType(UtilityType.SMOKE)
@@ -44,9 +50,12 @@ public class DataSeeder {
                     .description("Smoke CT depuis jungle")
                     .throwPosition("Jungle")
                     .aimPosition("Bord du toit CT")
-                    .build());
+                    .build();
+            if (lineup2 != null) {
+                lineupRepo.save(lineup2);
+            }
 
-            lineupRepo.save(UtilityLineup.builder()
+            UtilityLineup lineup3 = UtilityLineup.builder()
                     .mapName("Inferno")
                     .side(Side.T)
                     .utilityType(UtilityType.MOLOTOV)
@@ -54,9 +63,12 @@ public class DataSeeder {
                     .description("Molotov sur la position CT derrière le pilier")
                     .throwPosition("Top mid")
                     .aimPosition("Pilier gauche CT")
-                    .build());
+                    .build();
+            if (lineup3 != null) {
+                lineupRepo.save(lineup3);
+            }
 
-            lineupRepo.save(UtilityLineup.builder()
+            UtilityLineup lineup4 = UtilityLineup.builder()
                     .mapName("Dust2")
                     .side(Side.CT)
                     .utilityType(UtilityType.FLASH)
@@ -64,9 +76,12 @@ public class DataSeeder {
                     .description("Flash pour pop depuis CT long vers T")
                     .throwPosition("CT long corner")
                     .aimPosition("Mur long")
-                    .build());
+                    .build();
+            if (lineup4 != null) {
+                lineupRepo.save(lineup4);
+            }
 
-            System.out.println("[DataSeeder] Données de test insérées.");
+            log.info("[DataSeeder] Données de test insérées.");
         };
     }
 }

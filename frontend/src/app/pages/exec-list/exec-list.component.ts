@@ -70,4 +70,22 @@ export class ExecListComponent implements OnInit {
       error: () => this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 })
     });
   }
+
+  // Duplique une exec existante : demande un nouveau nom, puis crée une copie via l'API
+  duplicate(exec: Exec): void {
+    const newName = prompt('Nom de la copie :', `Copie de ${exec.name}`);
+    if (!newName?.trim()) return;
+    this.execService.create({
+      name: newName.trim(),
+      mapName: exec.mapName,
+      snapshotJson: exec.snapshotJson,
+      lineupIds: exec.lineups.map(l => l.id)
+    }).subscribe({
+      next: created => {
+        this.execs = [...this.execs, created];
+        this.snackBar.open(`Exec « ${created.name} » créée !`, 'Fermer', { duration: 2500 });
+      },
+      error: () => this.snackBar.open('Erreur lors de la duplication', 'Fermer', { duration: 3000 })
+    });
+  }
 }

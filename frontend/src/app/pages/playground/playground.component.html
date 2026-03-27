@@ -21,7 +21,7 @@
 
   <!-- Affichage de la map sélectionnée -->
   <div class="map-viewer" *ngIf="selectedMap">
-    <div class="map-display">
+    <div class="map-display" #mapDisplay>
 
       <!-- Image 2D de la map + zone de drag -->
       <div #dragZone class="map-drag-zone" [class.link-mode]="selectedPlayerId !== null" [style.background-color]="selectedMap.color" (click)="onBackgroundClick()">
@@ -40,9 +40,9 @@
           <small>Ajouter l'image dans assets/maps/{{ selectedMap.id }}.png</small>
         </div>
 
-        <!-- Tokens joueurs -->
+        <!-- Tokens joueurs (uniquement les joueurs en vie) -->
         <div
-          *ngFor="let player of players"
+          *ngFor="let player of alivePlayers"
           class="player-token"
           [class.ct]="player.side === 'CT'"
           [class.t-side]="player.side === 'T'"
@@ -58,6 +58,15 @@
           (click)="onPlayerClick(player.id); $event.stopPropagation()"
         >
           {{ player.number }}
+          <!-- Bouton × au survol pour éliminer le joueur -->
+          <button
+            class="kill-player-btn"
+            (click)="killPlayer(player.id); $event.stopPropagation()"
+            matTooltip="Éliminer ce joueur"
+            matTooltipPosition="above"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
 
         <!-- Tokens grenades -->
@@ -78,6 +87,15 @@
           (click)="onGrenadeClick(grenade.id); $event.stopPropagation()"
         >
           {{ grenade.label }}
+          <!-- Bouton de suppression : apparaît au survol -->
+          <button
+            class="remove-grenade-btn"
+            (click)="removeGrenade(grenade.id); $event.stopPropagation()"
+            [matTooltip]="'Retirer cette ' + grenade.name"
+            matTooltipPosition="above"
+          >
+            <mat-icon>remove</mat-icon>
+          </button>
         </div>
 
         <!-- Bandeaux d'instruction en mode lié -->
@@ -144,6 +162,10 @@
             <mat-icon>link_off</mat-icon>
             Effacer les flèches
           </button>
+          <button mat-stroked-button (click)="exportPng()" [disabled]="exporting" matTooltip="Télécharger le plateau en PNG">
+            <mat-icon>{{ exporting ? 'hourglass_empty' : 'download' }}</mat-icon>
+            {{ exporting ? 'Export...' : 'Export PNG' }}
+          </button>
         </div>
 
         <mat-divider></mat-divider>
@@ -205,6 +227,14 @@
               <mat-icon>save_as</mat-icon>
               Nouvelle
             </button>
+            <button mat-stroked-button
+              *ngIf="currentExecId"
+              [disabled]="execSaving"
+              (click)="duplicateCurrentExec()"
+              matTooltip="Dupliquer cette exec (&#39;Copie de...&#39;)">
+              <mat-icon>content_copy</mat-icon>
+              Dupliquer
+            </button>
             <button mat-icon-button color="warn"
               *ngIf="currentExecId"
               (click)="deleteCurrentExec()"
@@ -226,6 +256,19 @@
             <span class="token-preview t-side">1</span>
             <span>T (Terroriste)</span>
           </div>
+
+          <!-- Banc des éliminés -->
+          <div *ngIf="deadPlayers.length > 0">
+            <div class="legend-separator">☠ Éliminés</div>
+            <div class="legend-item" *ngFor="let p of deadPlayers">
+              <span class="token-preview dead" [class.ct]="p.side === 'CT'" [class.t-side]="p.side === 'T'">{{ p.number }}</span>
+              <span class="dead-label">{{ p.side }} {{ p.number }}</span>
+              <button class="add-grenade-btn" (click)="revivePlayer(p.id)" matTooltip="Remettre en jeu">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </div>
+
           <div class="legend-separator">Grenades</div>
           <div class="legend-item" *ngFor="let def of grenadeDefs">
             <span class="token-preview grenade" [ngClass]="def.type">{{ def.label }}</span>

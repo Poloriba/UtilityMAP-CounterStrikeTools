@@ -21,6 +21,8 @@ export interface ExecSnapshot {
   }>;
   // Flèches dessinées entre joueurs et grenades
   links: Array<{ playerId: string; grenadeId: string }>;
+  // IDs des joueurs éliminés (retirés du plateau)
+  deadPlayerIds?: string[];
 }
 
 // Une exec sauvegardée, telle que renvoyée par l'API

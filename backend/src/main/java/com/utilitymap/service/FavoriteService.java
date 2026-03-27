@@ -18,6 +18,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@SuppressWarnings("null")
 public class FavoriteService {
 
     private final FavoriteLineupRepository favoriteRepository;

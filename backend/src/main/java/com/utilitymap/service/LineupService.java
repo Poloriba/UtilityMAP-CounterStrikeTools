@@ -5,7 +5,6 @@ import com.utilitymap.dto.LineupResponse;
 import com.utilitymap.entity.Side;
 import com.utilitymap.entity.UtilityLineup;
 import com.utilitymap.entity.UtilityType;
-import com.utilitymap.repository.FavoriteLineupRepository;
 import com.utilitymap.repository.UtilityLineupRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +17,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@SuppressWarnings("null")
 public class LineupService {
 
     private final UtilityLineupRepository lineupRepository;
-    private final FavoriteLineupRepository favoriteRepository;
 
     @Transactional(readOnly = true)
     public List<LineupResponse> findAll(String mapName, Side side, UtilityType utilityType, String search) {

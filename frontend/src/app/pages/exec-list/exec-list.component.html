@@ -71,6 +71,10 @@
           <mat-icon>open_in_new</mat-icon>
           Ouvrir dans le Playground
         </button>
+        <button mat-stroked-button (click)="duplicate(exec)" matTooltip="Dupliquer cette exec">
+          <mat-icon>content_copy</mat-icon>
+          Dupliquer
+        </button>
         <button mat-icon-button color="warn" (click)="delete(exec)" matTooltip="Supprimer cette exec">
           <mat-icon>delete</mat-icon>
         </button>

@@ -43,13 +43,13 @@ export const CS2_MAPS: GameMap[] = [
     name: 'Dust2',
     radarUrl: 'assets/maps/de_dust.png',
     color: '#5d7a5d',
-    activeDuty: false
+    activeDuty: true
   },
   {
     id: 'de_overpass',
     name: 'Overpass',
     radarUrl: 'assets/maps/de_overpass.png',
     color: '#5d7a5d',
-    activeDuty: false
+    activeDuty: true
   }
 ];

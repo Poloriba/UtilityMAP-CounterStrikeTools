@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
 import { Lineup, LineupFilter, Side, UtilityType } from '../../models/lineup.model';
+import { CS2_MAPS } from '../../models/map.model';
 import { LineupService } from '../../services/lineup.service';
 
 @Component({
@@ -33,7 +34,7 @@ export class LineupListComponent implements OnInit {
   loading = false;          // indicateur de chargement
   filterForm: FormGroup;    // formulaire réactif des filtres
 
-  maps = ['Mirage', 'Inferno', 'Dust2', 'Nuke', 'Vertigo', 'Anubis', 'Ancient'];
+  maps = CS2_MAPS.map(m => m.name);
   sides: Side[] = ['T', 'CT'];
   types: UtilityType[] = ['SMOKE', 'FLASH', 'MOLOTOV', 'HE'];
 

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatListModule } from '@angular/material/list';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { CS2_MAPS, GameMap } from '../../models/map.model';
 import { Lineup } from '../../models/lineup.model';
 import { Exec, ExecRequest, ExecSnapshot } from '../../models/exec.model';
@@ -59,7 +61,8 @@ const GRENADE_DEFS = [
     MatButtonModule, MatIconModule, MatChipsModule,
     MatProgressSpinnerModule, MatTooltipModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatListModule, MatSnackBarModule, MatDividerModule
+    MatListModule, MatSnackBarModule, MatDividerModule,
+    MatMenuModule, OverlayModule
   ],
   templateUrl: './playground.component.html',
   styleUrls: ['./playground.component.scss']
@@ -98,8 +101,18 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
   dragPositions: Record<string, { x: number; y: number }> = {}; // offset CDK de chaque jeton après un drop
   livePositions: Record<string, { x: number; y: number }> = {}; // offset en temps réel pendant le drag (pour les flèches)
   selectedPlayerId: string | null = null; // ID du joueur sélectionné en mode liaison
-  links: Array<{ playerId: string; grenadeId: string }> = []; // flèches joueur → grenade dessinées
+  links: Array<{ playerId: string; grenadeId: string; lineupId?: string }> = []; // flèches joueur → grenade dessinées
   deadPlayerIds: string[] = []; // IDs des joueurs actuellement éliminés (retirés du plateau)
+
+  // --- État du popup lineup ---
+  hoveredLink: { playerId: string; grenadeId: string; lineupId?: string } | null = null;
+  hoveredLineup: Lineup | null = null;
+  popupPos = { x: 0, y: 0 };
+  menuPos = { x: 0, y: 0 }; // position du menu contextuel dans la drag zone
+
+  // --- Sélecteur de lineup pour un lien ---
+  linkMenuTarget: { playerId: string; grenadeId: string; lineupId?: string } | null = null; // lien cible du menu contextuel
+  linkMenuLineups: Lineup[] = []; // lineups filtrées pour le type de grenade du lien
   private _dragDistance = 0; // distance parcourue lors du dernier geste (pour distinguer clic et drag)
 
   // Joueurs encore en vie sur le plateau (filtrés en temps réel)
@@ -324,6 +337,99 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
   isLinked(grenadeId: string): boolean {
     if (!this.selectedPlayerId) return false;
     return this.links.some(l => l.playerId === this.selectedPlayerId && l.grenadeId === grenadeId);
+  }
+
+  // --- Méthodes liées aux Lineups sur les liens ---
+
+  // Retourne la lineup associée à un lien (lookup rapide dans mapLineups)
+  getLinkedLineup(lineupId: string | undefined): Lineup | undefined {
+    if (!lineupId) return undefined;
+    return this.mapLineups.find(l => l.id === lineupId);
+  }
+
+  // Retourne le type de grenade d'un lien
+  getGrenadeType(grenadeId: string): string {
+    return this.grenades.find(g => g.id === grenadeId)?.type ?? '';
+  }
+
+  // Clic gauche sur une flèche : ouvre le menu de sélection de lineup positionné au curseur
+  onLinkRightClick(event: MouseEvent, link: { playerId: string; grenadeId: string; lineupId?: string }, trigger: MatMenuTrigger): void {
+    event.stopPropagation();
+    // Positionne le trigger invisible par rapport à la drag zone
+    const zone = this.dragZoneRef.nativeElement;
+    const rect = zone.getBoundingClientRect();
+    this.menuPos = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    this.onLinkMouseLeave(); // ferme le popup de preview
+    // Prépare le menu
+    const grenadeType = this.getGrenadeType(link.grenadeId)?.toUpperCase();
+    this.linkMenuTarget = link;
+    this.linkMenuLineups = this.mapLineups.filter(l => l.utilityType === grenadeType);
+    // Ouvre le menu au prochain tick (après que le trigger ait bougé)
+    setTimeout(() => trigger.openMenu());
+  }
+
+  // Ouvre le menu de sélection de lineup pour un lien donné
+  openLineupPicker(link: { playerId: string; grenadeId: string; lineupId?: string }, trigger: MatMenuTrigger): void {
+    const grenadeType = this.getGrenadeType(link.grenadeId)?.toUpperCase();
+    this.linkMenuTarget = link;
+    this.linkMenuLineups = this.mapLineups.filter(l => l.utilityType === grenadeType);
+    trigger.openMenu();
+  }
+
+  // Associe une lineup au lien ciblé
+  assignLineupToLink(lineup: Lineup): void {
+    if (!this.linkMenuTarget) return;
+    this.links = this.links.map(l =>
+      l.playerId === this.linkMenuTarget!.playerId && l.grenadeId === this.linkMenuTarget!.grenadeId
+        ? { ...l, lineupId: lineup.id }
+        : l
+    );
+    this.linkMenuTarget = null;
+  }
+
+  // Retire l'association lineup d'un lien
+  removeLineupFromLink(): void {
+    if (!this.linkMenuTarget) return;
+    this.links = this.links.map(l =>
+      l.playerId === this.linkMenuTarget!.playerId && l.grenadeId === this.linkMenuTarget!.grenadeId
+        ? { playerId: l.playerId, grenadeId: l.grenadeId }
+        : l
+    );
+    this.linkMenuTarget = null;
+  }
+
+  // Affiche le popup lineup au survol d'une flèche SVG
+  onLinkMouseEnter(link: { playerId: string; grenadeId: string; lineupId?: string }, event: MouseEvent): void {
+    if (!link.lineupId) return;
+    const lineup = this.getLinkedLineup(link.lineupId);
+    if (!lineup) return;
+    this.hoveredLink = link;
+    this.hoveredLineup = lineup;
+    this.popupPos = { x: event.clientX + 12, y: event.clientY + 12 };
+  }
+
+  // Met à jour la position du popup pendant le survol
+  onLinkMouseMove(event: MouseEvent): void {
+    if (!this.hoveredLineup) return;
+    this.popupPos = { x: event.clientX + 12, y: event.clientY + 12 };
+  }
+
+  // Ferme le popup lineup
+  onLinkMouseLeave(): void {
+    this.hoveredLink = null;
+    this.hoveredLineup = null;
+  }
+
+  // Retourne la couleur de la flèche selon le type de grenade liée ou le côté du joueur
+  getLinkStroke(link: { playerId: string; grenadeId: string; lineupId?: string }): string {
+    if (link.lineupId) {
+      const type = this.getGrenadeType(link.grenadeId);
+      const colors: Record<string, string> = {
+        smoke: '#90a4ae', flash: '#fbc02d', molotov: '#e64a19', he: '#388e3c'
+      };
+      return colors[type] ?? (this.getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726');
+    }
+    return this.getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726';
   }
 
   // --- Méthodes liées aux Execs ---

@@ -19,8 +19,8 @@ export interface ExecSnapshot {
     defaultX: number; // position initiale en %
     defaultY: number;
   }>;
-  // Flèches dessinées entre joueurs et grenades
-  links: Array<{ playerId: string; grenadeId: string }>;
+  // Flèches dessinées entre joueurs et grenades (lineupId optionnel = lineup associée)
+  links: Array<{ playerId: string; grenadeId: string; lineupId?: string }>;
   // IDs des joueurs éliminés (retirés du plateau)
   deadPlayerIds?: string[];
 }

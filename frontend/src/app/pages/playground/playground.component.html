@@ -113,20 +113,103 @@
             <marker id="arrowhead-t" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
               <polygon points="0 0, 8 3, 0 6" fill="#ffa726"/>
             </marker>
+            <marker *ngFor="let type of ['smoke','flash','molotov','he']"
+              [id]="'arrowhead-' + type" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6"
+                [attr.fill]="type === 'smoke' ? '#90a4ae' : type === 'flash' ? '#fbc02d' : type === 'molotov' ? '#e64a19' : '#388e3c'"/>
+            </marker>
           </defs>
-          <line
-            *ngFor="let link of links"
-            [attr.x1]="getTokenCenter(link.playerId).x"
-            [attr.y1]="getTokenCenter(link.playerId).y"
-            [attr.x2]="getTokenCenter(link.grenadeId).x"
-            [attr.y2]="getTokenCenter(link.grenadeId).y"
-            [attr.stroke]="getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726'"
-            stroke-width="2"
-            stroke-dasharray="6,3"
-            stroke-linecap="round"
-            [attr.marker-end]="getPlayerSide(link.playerId) === 'CT' ? 'url(#arrowhead-ct)' : 'url(#arrowhead-t)'"
-          />
+
+          <ng-container *ngFor="let link of links">
+            <!-- Zone cliquable invisible (épaisse) pour interaction -->
+            <line
+              class="arrow-hitzone"
+              [attr.x1]="getTokenCenter(link.playerId).x"
+              [attr.y1]="getTokenCenter(link.playerId).y"
+              [attr.x2]="getTokenCenter(link.grenadeId).x"
+              [attr.y2]="getTokenCenter(link.grenadeId).y"
+              stroke="transparent"
+              stroke-width="14"
+              style="pointer-events: stroke; cursor: pointer;"
+              (mouseenter)="onLinkMouseEnter(link, $event)"
+              (mousemove)="onLinkMouseMove($event)"
+              (mouseleave)="onLinkMouseLeave()"
+              (click)="onLinkRightClick($event, link, linkMenuTrigger)"
+            />
+            <!-- Flèche visible -->
+            <line
+              [attr.x1]="getTokenCenter(link.playerId).x"
+              [attr.y1]="getTokenCenter(link.playerId).y"
+              [attr.x2]="getTokenCenter(link.grenadeId).x"
+              [attr.y2]="getTokenCenter(link.grenadeId).y"
+              [attr.stroke]="getLinkStroke(link)"
+              [attr.stroke-width]="link.lineupId ? 3 : 2"
+              [attr.stroke-dasharray]="link.lineupId ? '8,4' : '6,3'"
+              stroke-linecap="round"
+              [attr.marker-end]="link.lineupId
+                ? 'url(#arrowhead-' + getGrenadeType(link.grenadeId) + ')'
+                : (getPlayerSide(link.playerId) === 'CT' ? 'url(#arrowhead-ct)' : 'url(#arrowhead-t)')"
+            />
+            <!-- Icône lineup sur le milieu de la flèche (si lineup associée) -->
+            <g *ngIf="link.lineupId">
+              <circle
+                [attr.cx]="(getTokenCenter(link.playerId).x + getTokenCenter(link.grenadeId).x) / 2"
+                [attr.cy]="(getTokenCenter(link.playerId).y + getTokenCenter(link.grenadeId).y) / 2"
+                r="8" [attr.fill]="getLinkStroke(link)" opacity="0.9"/>
+              <text
+                [attr.x]="(getTokenCenter(link.playerId).x + getTokenCenter(link.grenadeId).x) / 2"
+                [attr.y]="(getTokenCenter(link.playerId).y + getTokenCenter(link.grenadeId).y) / 2 + 4"
+                text-anchor="middle" fill="white" font-size="10" font-weight="bold"
+                style="pointer-events: none;">⚡</text>
+            </g>
+          </ng-container>
         </svg>
+
+        <!-- Menu contextuel pour associer une lineup à un lien -->
+        <div class="menu-trigger-anchor" #menuAnchor
+          [style.position]="'absolute'"
+          [style.left.px]="menuPos.x"
+          [style.top.px]="menuPos.y"
+          style="width: 1px; height: 1px; visibility: hidden;">
+          <button [matMenuTriggerFor]="lineupPickerMenu" #linkMenuTrigger="matMenuTrigger"></button>
+        </div>
+        <mat-menu #lineupPickerMenu="matMenu" class="lineup-picker-menu">
+          <div class="lineup-picker-header" (click)="$event.stopPropagation()">
+            Associer une lineup
+          </div>
+          <button mat-menu-item *ngFor="let lineup of linkMenuLineups" (click)="assignLineupToLink(lineup)">
+            <span class="option-type-dot" [ngClass]="lineup.utilityType.toLowerCase()"></span>
+            {{ lineup.name }}
+          </button>
+          <button mat-menu-item *ngIf="linkMenuTarget?.lineupId" (click)="removeLineupFromLink()" class="remove-lineup-item">
+            <mat-icon>link_off</mat-icon>
+            Retirer la lineup
+          </button>
+          <div *ngIf="linkMenuLineups.length === 0" class="no-lineups-hint" (click)="$event.stopPropagation()">
+            Aucune lineup de ce type sur cette map
+          </div>
+        </mat-menu>
+      </div>
+
+      <!-- Popup flottant de preview lineup -->
+      <div
+        class="lineup-hover-popup"
+        *ngIf="hoveredLineup"
+        [style.left.px]="popupPos.x"
+        [style.top.px]="popupPos.y"
+      >
+        <div class="popup-header">
+          <span class="popup-type-chip" [ngClass]="hoveredLineup.utilityType.toLowerCase()">
+            {{ hoveredLineup.utilityType }}
+          </span>
+          <span class="popup-side-chip" [ngClass]="hoveredLineup.side.toLowerCase()">
+            {{ hoveredLineup.side }}
+          </span>
+        </div>
+        <div class="popup-name">{{ hoveredLineup.name }}</div>
+        <div class="popup-desc" *ngIf="hoveredLineup.description">{{ hoveredLineup.description }}</div>
+        <img *ngIf="hoveredLineup.imageUrl" [src]="hoveredLineup.imageUrl" class="popup-img" alt="lineup preview"/>
+        <div class="popup-hint">Cliquez sur la flèche pour changer</div>
       </div>
 
       <!-- Infos de la map -->

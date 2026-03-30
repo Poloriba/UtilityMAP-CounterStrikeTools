@@ -94,6 +94,6 @@ public class ExecService {
         return lineupIds.stream()
                 .map(lid -> lineupRepository.findById(lid)
                         .orElseThrow(() -> new EntityNotFoundException("Lineup introuvable : " + lid)))
-                .toList();
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
     }
 }

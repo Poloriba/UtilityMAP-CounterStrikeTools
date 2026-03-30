@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [RouterOutlet, RouterLink, MatToolbarModule, MatButtonModule, MatIconModule],
   template: `
-    <mat-toolbar color="primary">
+    <mat-toolbar style="background: #1b1b2f; color: #e0e0e0;">
       <mat-icon>gps_fixed</mat-icon>
       <span style="margin-left: 8px; font-weight: bold">UtilityMAP CS2</span>
       <span class="spacer"></span>
@@ -22,7 +22,7 @@ import { MatIconModule } from '@angular/material/icon';
       <button mat-button routerLink="/execs">
         <mat-icon>bolt</mat-icon> Execs
       </button>
-      <button mat-raised-button color="accent" routerLink="/lineups/new">
+      <button mat-raised-button style="background: #e67e22; color: #fff;" routerLink="/lineups/new">
         <mat-icon>add</mat-icon> Nouvelle
       </button>
     </mat-toolbar>
@@ -34,6 +34,7 @@ import { MatIconModule } from '@angular/material/icon';
     .spacer { flex: 1 1 auto; }
     .main-content { padding: 24px; max-width: 1200px; margin: 0 auto; }
     mat-toolbar mat-icon { font-size: 28px; }
+    mat-toolbar .mat-mdc-button { color: #e0e0e0; }
   `]
 })
 export class AppComponent {}

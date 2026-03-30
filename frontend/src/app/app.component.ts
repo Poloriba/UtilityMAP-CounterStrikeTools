@@ -1,15 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, MatToolbarModule, MatButtonModule, MatIconModule],
+  imports: [RouterOutlet, RouterLink, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule],
   template: `
-    <mat-toolbar style="background: #1b1b2f; color: #e0e0e0;">
+    <mat-toolbar class="app-toolbar">
       <mat-icon>gps_fixed</mat-icon>
       <span style="margin-left: 8px; font-weight: bold">UtilityMAP CS2</span>
       <span class="spacer"></span>
@@ -22,8 +24,12 @@ import { MatIconModule } from '@angular/material/icon';
       <button mat-button routerLink="/execs">
         <mat-icon>bolt</mat-icon> Execs
       </button>
-      <button mat-raised-button style="background: #e67e22; color: #fff;" routerLink="/lineups/new">
+      <button mat-raised-button class="btn-new" routerLink="/lineups/new">
         <mat-icon>add</mat-icon> Nouvelle
+      </button>
+      <button mat-icon-button (click)="theme.toggle()"
+        [matTooltip]="theme.isDark() ? 'Mode clair' : 'Mode sombre'">
+        <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
     </mat-toolbar>
     <div class="main-content">
@@ -32,9 +38,30 @@ import { MatIconModule } from '@angular/material/icon';
   `,
   styles: [`
     .spacer { flex: 1 1 auto; }
-    .main-content { padding: 24px; max-width: 1200px; margin: 0 auto; }
-    mat-toolbar mat-icon { font-size: 28px; }
-    mat-toolbar .mat-mdc-button { color: #e0e0e0; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
+    .main-content {
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+      flex: 1;
+      background-color: var(--bg-primary);
+    }
+    .app-toolbar {
+      background: var(--bg-toolbar);
+      color: var(--text-toolbar);
+    }
+    .app-toolbar mat-icon { font-size: 28px; }
+    .app-toolbar .mat-mdc-button { color: var(--text-toolbar); }
+    .app-toolbar .mat-mdc-icon-button { color: var(--text-toolbar); }
+    .btn-new { background: var(--accent-orange) !important; color: #fff !important; }
   `]
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  theme = inject(ThemeService);
+
+  ngOnInit(): void {
+    this.theme.applyTheme();
+  }
+}

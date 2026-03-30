@@ -13,6 +13,7 @@
       gap: 8px;
       font-size: 28px;
       margin: 0;
+      color: var(--text-primary);
     }
   }
 
@@ -33,7 +34,7 @@
   .empty-state {
     text-align: center;
     padding: 48px;
-    color: #999;
+    color: var(--text-hint);
 
     mat-icon {
       font-size: 64px;
@@ -56,7 +57,7 @@
     transition: box-shadow 0.2s;
 
     &:hover {
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-card-hover);
     }
 
     mat-card-title { font-size: 18px; }
@@ -85,7 +86,7 @@
         align-items: center;
         gap: 4px;
         font-size: 13px;
-        color: #777;
+        color: var(--text-muted);
 
         mat-icon {
           font-size: 16px;
@@ -109,10 +110,10 @@
         min-height: 24px;
         padding: 0 10px;
 
-        &.smoke   { background: #455a64; color: #cfd8dc; }
-        &.flash   { background: #f9a825; color: #333; }
-        &.molotov { background: #b71c1c; color: #ef9a9a; }
-        &.he      { background: #1b5e20; color: #a5d6a7; }
+        &.smoke   { background: var(--chip-smoke-bg); color: var(--chip-smoke-text); }
+        &.flash   { background: var(--chip-flash-bg); color: var(--chip-flash-text); }
+        &.molotov { background: var(--chip-molotov-bg); color: var(--chip-molotov-text); }
+        &.he      { background: var(--chip-he-bg); color: var(--chip-he-text); }
       }
     }
 

@@ -18,6 +18,7 @@
       flex: 1;
       font-size: 26px;
       margin: 0;
+      color: var(--text-primary);
     }
 
     .type-badge {
@@ -38,7 +39,7 @@
       margin: 20px 0;
 
       h3 {
-        color: #555;
+        color: var(--text-muted);
         font-size: 14px;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -47,7 +48,7 @@
 
       p {
         font-size: 16px;
-        color: #333;
+        color: var(--text-primary);
       }
     }
 
@@ -69,7 +70,7 @@
         strong {
           display: block;
           font-size: 13px;
-          color: #666;
+          color: var(--text-muted);
         }
 
         p {
@@ -87,7 +88,7 @@
 
     .timestamps {
       margin-top: 16px;
-      color: #aaa;
+      color: var(--text-hint);
     }
 
     .actions {

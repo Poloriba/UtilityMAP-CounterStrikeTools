@@ -1,11 +1,146 @@
+// ========== THEME VARIABLES ==========
+:root {
+  // Light theme (default)
+  --bg-primary: #f5f5f5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafafa;
+  --bg-toolbar: #1b1b2f;
+  --bg-input: #ffffff;
+  --bg-filter-card: #ffffff;
+
+  --text-primary: #212121;
+  --text-secondary: #555;
+  --text-muted: #777;
+  --text-hint: #999;
+  --text-toolbar: #e0e0e0;
+
+  --border-color: #e0e0e0;
+  --divider-color: #e0e0e0;
+
+  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+  --btn-stroked-color: #555;
+  --btn-stroked-border: #ccc;
+  --btn-stroked-hover-color: #333;
+  --btn-stroked-hover-border: #999;
+
+  --accent-orange: #e67e22;
+  --chip-smoke-bg: #90a4ae; --chip-smoke-text: #fff;
+  --chip-flash-bg: #f9a825; --chip-flash-text: #333;
+  --chip-molotov-bg: #e64a19; --chip-molotov-text: #fff;
+  --chip-he-bg: #388e3c; --chip-he-text: #fff;
+}
+
+.dark-theme {
+  --bg-primary: #121212;
+  --bg-card: #1e1e1e;
+  --bg-card-hover: #2a2a2a;
+  --bg-toolbar: #1b1b2f;
+  --bg-input: #2a2a2a;
+  --bg-filter-card: #1e1e1e;
+
+  --text-primary: #e0e0e0;
+  --text-secondary: #bbb;
+  --text-muted: #999;
+  --text-hint: #777;
+  --text-toolbar: #e0e0e0;
+
+  --border-color: #333;
+  --divider-color: #333;
+
+  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+  --btn-stroked-color: #ccc;
+  --btn-stroked-border: #555;
+  --btn-stroked-hover-color: #fff;
+  --btn-stroked-hover-border: #888;
+
+  --chip-smoke-bg: #455a64; --chip-smoke-text: #cfd8dc;
+  --chip-flash-bg: #f9a825; --chip-flash-text: #333;
+  --chip-molotov-bg: #b71c1c; --chip-molotov-text: #ef9a9a;
+  --chip-he-bg: #1b5e20; --chip-he-text: #a5d6a7;
+}
+
+// ========== BASE STYLES ==========
 html, body {
   height: 100%;
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: #f5f5f5;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
 }
 
-// Fond sombre pour le playground
+html {
+  background-color: var(--bg-primary);
+}
+
+// ========== MATERIAL OVERRIDES (dark-theme) ==========
+.dark-theme {
+  // Cards
+  .mat-mdc-card {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color);
+  }
+
+  .mat-mdc-card-title { color: var(--text-primary) !important; }
+  .mat-mdc-card-subtitle { color: var(--text-secondary) !important; }
+
+  // Form fields
+  .mat-mdc-form-field {
+    .mdc-text-field--outlined .mdc-notched-outline__leading,
+    .mdc-text-field--outlined .mdc-notched-outline__notch,
+    .mdc-text-field--outlined .mdc-notched-outline__trailing {
+      border-color: var(--border-color) !important;
+    }
+    .mat-mdc-input-element, .mat-mdc-select-value { color: var(--text-primary) !important; }
+    .mat-mdc-floating-label { color: var(--text-muted) !important; }
+  }
+
+  // Select panels
+  .mat-mdc-select-panel {
+    background: var(--bg-card) !important;
+    .mat-mdc-option { color: var(--text-primary) !important; }
+  }
+
+  // Buttons
+  .mat-mdc-button:not(.mat-mdc-icon-button) {
+    color: var(--text-primary) !important;
+    .mat-icon { color: var(--text-primary) !important; }
+  }
+
+  .mat-mdc-outlined-button,
+  .mat-mdc-stroked-button {
+    color: var(--btn-stroked-color) !important;
+    border-color: var(--btn-stroked-border) !important;
+    &:hover:not([disabled]) {
+      color: var(--btn-stroked-hover-color) !important;
+      border-color: var(--btn-stroked-hover-border) !important;
+    }
+  }
+
+  .mat-mdc-raised-button:not([color]) {
+    color: var(--text-primary) !important;
+    background: var(--bg-card) !important;
+  }
+
+  // Dividers
+  .mat-divider { border-color: var(--divider-color) !important; }
+
+  // Toolbar
+  .mat-toolbar {
+    background: var(--bg-toolbar) !important;
+    color: var(--text-toolbar) !important;
+  }
+
+  // Chips
+  .mat-mdc-chip { border: 1px solid var(--border-color); }
+}
+
+// Playground fond sombre (toujours)
 .playground-page {
   background-color: #111;
   min-height: calc(100vh - 64px);

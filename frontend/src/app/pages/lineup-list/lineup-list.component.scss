@@ -5,6 +5,7 @@
     gap: 8px;
     font-size: 28px;
     margin-bottom: 16px;
+    color: var(--text-primary);
   }
 
   .filter-card {
@@ -29,7 +30,7 @@
   }
 
   .results-info {
-    color: #666;
+    color: var(--text-muted);
     margin-bottom: 12px;
     font-size: 14px;
   }
@@ -51,7 +52,7 @@
     transition: box-shadow 0.2s;
 
     &:hover {
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-card-hover);
     }
 
     mat-card-header {
@@ -70,7 +71,7 @@
     }
 
     .description {
-      color: #555;
+      color: var(--text-secondary);
       font-size: 14px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -81,7 +82,7 @@
       display: flex;
       gap: 16px;
       font-size: 13px;
-      color: #777;
+      color: var(--text-muted);
       margin-top: 8px;
 
       span {
@@ -106,7 +107,7 @@
     grid-column: 1 / -1;
     text-align: center;
     padding: 48px;
-    color: #999;
+    color: var(--text-hint);
 
     mat-icon {
       font-size: 64px;

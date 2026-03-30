@@ -104,11 +104,11 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
   links: Array<{ playerId: string; grenadeId: string; lineupId?: string }> = []; // flèches joueur → grenade dessinées
   deadPlayerIds: string[] = []; // IDs des joueurs actuellement éliminés (retirés du plateau)
 
-  // --- État du popup lineup ---
-  hoveredLink: { playerId: string; grenadeId: string; lineupId?: string } | null = null;
-  hoveredLineup: Lineup | null = null;
-  popupPos = { x: 0, y: 0 };
-  menuPos = { x: 0, y: 0 }; // position du menu contextuel dans la drag zone
+  // --- État du popup lineup (survol d'une flèche liée) ---
+  hoveredLink: { playerId: string; grenadeId: string; lineupId?: string } | null = null; // lien survolé
+  hoveredLineup: Lineup | null = null; // lineup résolue pour l'affichage du popup
+  popupPos = { x: 0, y: 0 }; // position du popup en pixels (fixed, suit le curseur)
+  menuPos = { x: 0, y: 0 }; // position du trigger du menu picker dans la drag zone
 
   // --- Sélecteur de lineup pour un lien ---
   linkMenuTarget: { playerId: string; grenadeId: string; lineupId?: string } | null = null; // lien cible du menu contextuel

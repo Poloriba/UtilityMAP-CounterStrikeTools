@@ -89,6 +89,7 @@ public class ExecService {
                 .orElseThrow(() -> new EntityNotFoundException("Exec introuvable : " + id));
     }
 
+    /** Résout les IDs en entités. Retourne une ArrayList mutable (requis par Hibernate pour @ManyToMany). */
     private List<UtilityLineup> resolveLineups(List<UUID> lineupIds) {
         if (lineupIds == null || lineupIds.isEmpty()) return new ArrayList<>();
         return lineupIds.stream()

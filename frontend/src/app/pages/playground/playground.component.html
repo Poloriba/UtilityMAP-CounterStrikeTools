@@ -105,14 +105,17 @@
         </div>
 
         <!-- SVG overlay : flèches joueur → grenade -->
+        <!-- SVG overlay : flèches joueur → grenade + interaction lineup -->
         <svg class="arrows-overlay">
           <defs>
+            <!-- Pointes de flèche par côté (CT bleu, T orange) -->
             <marker id="arrowhead-ct" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
               <polygon points="0 0, 8 3, 0 6" fill="#42a5f5"/>
             </marker>
             <marker id="arrowhead-t" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
               <polygon points="0 0, 8 3, 0 6" fill="#ffa726"/>
             </marker>
+            <!-- Pointes de flèche par type de grenade (pour liens avec lineup associée) -->
             <marker *ngFor="let type of ['smoke','flash','molotov','he']"
               [id]="'arrowhead-' + type" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
               <polygon points="0 0, 8 3, 0 6"
@@ -136,7 +139,7 @@
               (mouseleave)="onLinkMouseLeave()"
               (click)="onLinkRightClick($event, link, linkMenuTrigger)"
             />
-            <!-- Flèche visible -->
+            <!-- Flèche visible : plus épaisse et colorée si une lineup est associée -->
             <line
               [attr.x1]="getTokenCenter(link.playerId).x"
               [attr.y1]="getTokenCenter(link.playerId).y"
@@ -150,7 +153,7 @@
                 ? 'url(#arrowhead-' + getGrenadeType(link.grenadeId) + ')'
                 : (getPlayerSide(link.playerId) === 'CT' ? 'url(#arrowhead-ct)' : 'url(#arrowhead-t)')"
             />
-            <!-- Icône lineup sur le milieu de la flèche (si lineup associée) -->
+            <!-- Badge ⚡ au centre de la flèche, indique qu'une lineup est liée -->
             <g *ngIf="link.lineupId">
               <circle
                 [attr.cx]="(getTokenCenter(link.playerId).x + getTokenCenter(link.grenadeId).x) / 2"
@@ -165,7 +168,7 @@
           </ng-container>
         </svg>
 
-        <!-- Menu contextuel pour associer une lineup à un lien -->
+        <!-- Trigger invisible positionné au curseur pour le menu de sélection de lineup -->
         <div class="menu-trigger-anchor" #menuAnchor
           [style.position]="'absolute'"
           [style.left.px]="menuPos.x"
@@ -191,7 +194,7 @@
         </mat-menu>
       </div>
 
-      <!-- Popup flottant de preview lineup -->
+      <!-- Popup flottant au survol d'une flèche liée : affiche les détails de la lineup -->
       <div
         class="lineup-hover-popup"
         *ngIf="hoveredLineup"

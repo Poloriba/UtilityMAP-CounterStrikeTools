@@ -31,13 +31,13 @@ export const CS2_MAPS: GameMap[] = [
     color: '#5d7a5d',
     activeDuty: true
   },
-  {
-    id: 'de_anubis',
-    name: 'Anubis',
-    radarUrl: 'assets/maps/de_anubis.png',
-    color: '#5d7a5d',
-    activeDuty: true
-  },
+  // {
+  //   id: 'de_anubis',
+  //   name: 'Anubis',
+  //   radarUrl: 'assets/maps/de_anubis.png',
+  //   color: '#5d7a5d',
+  //   activeDuty: true
+  // },
   {
     id: 'de_dust2',
     name: 'Dust2',

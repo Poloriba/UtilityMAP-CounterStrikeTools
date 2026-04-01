@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ChildrenOutletContexts, RouterOutlet, RouterLink } from '@angular/router';
+import { ChildrenOutletContexts, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { routeAnimations } from './route-animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,7 +10,7 @@ import { ThemeService } from './services/theme.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule],
   animations: [routeAnimations],
   template: `
     <mat-toolbar class="app-toolbar">
@@ -19,13 +19,13 @@ import { ThemeService } from './services/theme.service';
         <span style="margin-left: 8px; font-weight: bold">UtilityMAP CS2</span>
       </a>
       <span class="spacer"></span>
-      <button mat-button routerLink="/lineups">
+      <button mat-button routerLink="/lineups" routerLinkActive="nav-active" [routerLinkActiveOptions]="{exact: true}">
         <mat-icon>list</mat-icon> Lineups
       </button>
-      <button mat-button routerLink="/playground">
+      <button mat-button routerLink="/playground" routerLinkActive="nav-active">
         <mat-icon>map</mat-icon> Playground
       </button>
-      <button mat-button routerLink="/execs">
+      <button mat-button routerLink="/execs" routerLinkActive="nav-active">
         <mat-icon>bolt</mat-icon> Execs
       </button>
       <button mat-raised-button class="btn-new" routerLink="/lineups/new">
@@ -67,6 +67,11 @@ import { ThemeService } from './services/theme.service';
       cursor: pointer;
     }
     .btn-new { background: var(--accent-orange) !important; color: #fff !important; }
+    .nav-active {
+      color: #fff !important;
+      border-bottom: 2px solid var(--accent-orange);
+      border-radius: 0;
+    }
   `]
 })
 export class AppComponent implements OnInit {

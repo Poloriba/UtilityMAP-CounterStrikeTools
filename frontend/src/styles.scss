@@ -100,10 +100,16 @@ html {
     .mat-mdc-floating-label { color: var(--text-muted) !important; }
   }
 
-  // Select panels
+  // Select panels (dropdown overlay lives in CDK overlay, outside components)
   .mat-mdc-select-panel {
     background: var(--bg-card) !important;
-    .mat-mdc-option { color: var(--text-primary) !important; }
+    .mat-mdc-option {
+      color: var(--text-primary) !important;
+      .mdc-list-item__primary-text { color: var(--text-primary) !important; }
+      &:hover, &.mat-mdc-option-active {
+        background: var(--bg-card-hover) !important;
+      }
+    }
   }
 
   // Buttons

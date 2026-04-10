@@ -18,6 +18,7 @@ import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CS2_MAPS, GameMap } from '../../models/map.model';
 import { Lineup } from '../../models/lineup.model';
+import { UTILITY_COLORS, UTILITY_COLORS_LIGHT } from '../../models/utility-colors';
 import { Exec, ExecRequest, ExecSnapshot } from '../../models/exec.model';
 import { LineupService } from '../../services/lineup.service';
 import { ExecService } from '../../services/exec.service';
@@ -424,10 +425,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
   getLinkStroke(link: { playerId: string; grenadeId: string; lineupId?: string }): string {
     if (link.lineupId) {
       const type = this.getGrenadeType(link.grenadeId);
-      const colors: Record<string, string> = {
-        smoke: '#90a4ae', flash: '#fbc02d', molotov: '#e64a19', he: '#388e3c'
-      };
-      return colors[type] ?? (this.getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726');
+      return UTILITY_COLORS_LIGHT[type] ?? (this.getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726');
     }
     return this.getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726';
   }
@@ -550,10 +548,8 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // Couleurs des grenades pour l'export canvas
-  private readonly GRENADE_COLORS: Record<string, string> = {
-    smoke: '#607d8b', flash: '#fbc02d', molotov: '#e64a19', he: '#388e3c'
-  };
+  // Couleurs des grenades pour l'export canvas (référence centralisée)
+  private readonly GRENADE_COLORS = UTILITY_COLORS_LIGHT;
 
   // Dessine un jeton rond (joueur) sur le canvas
   private drawPlayerToken(ctx: CanvasRenderingContext2D, player: PlayerToken, x: number, y: number, size: number): void {

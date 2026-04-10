@@ -14,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Lineup } from '../../models/lineup.model';
+import { UTILITY_COLORS } from '../../models/utility-colors';
 import { Exec } from '../../models/exec.model';
 import { LineupService } from '../../services/lineup.service';
 import { FavoriteService } from '../../services/favorite.service';
@@ -39,12 +40,7 @@ export class LineupDetailComponent implements OnInit {
   selectedExecId: string | null = null; // exec sélectionnée dans le dropdown d'association
 
   // Couleurs associées à chaque type de grenade (utilisées dans le template)
-  typeColors: Record<string, string> = {
-    SMOKE: '#607d8b',
-    FLASH: '#fbc02d',
-    MOLOTOV: '#e64a19',
-    HE: '#388e3c'
-  };
+  typeColors = UTILITY_COLORS;
 
   constructor(
     private route: ActivatedRoute,

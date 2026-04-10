@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
 import { Lineup, LineupFilter, Side, UtilityType } from '../../models/lineup.model';
+import { UTILITY_COLORS } from '../../models/utility-colors';
 import { CS2_MAPS } from '../../models/map.model';
 import { LineupService } from '../../services/lineup.service';
 
@@ -39,12 +40,7 @@ export class LineupListComponent implements OnInit {
   types: UtilityType[] = ['SMOKE', 'FLASH', 'MOLOTOV', 'HE'];
 
   // Couleurs associées à chaque type (utilisées pour les badges dans le template)
-  typeColors: Record<UtilityType, string> = {
-    SMOKE: '#607d8b',
-    FLASH: '#fbc02d',
-    MOLOTOV: '#e64a19',
-    HE: '#388e3c'
-  };
+  typeColors = UTILITY_COLORS;
 
   constructor(private lineupService: LineupService, private fb: FormBuilder, private route: ActivatedRoute) {
     this.filterForm = this.fb.group({

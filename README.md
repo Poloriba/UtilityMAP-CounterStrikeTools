@@ -1,45 +1,50 @@
 # UtilityMAP CS2
 
-Gestionnaire de lineups (smokes, flashs, molotovs, HE) pour CS2.
+Lineup manager (smokes, flashes, molotovs, HE grenades) for CS2.
+
+## Ownership & License
+
+This project is owned by **Paul RIBA**.  
+The source code is open source. Any use, modification or redistribution of the code is permitted provided that you send an authorization request email to [paul.riba@epitech.eu](mailto:paul.riba@epitech.eu).
 
 ## Stack
-- **Backend** : Spring Boot 3, Spring Data JPA, PostgreSQL / H2
-- **Frontend** : Angular 17 (standalone), Angular Material
-- **Dev** : Docker Compose
+- **Backend**: Spring Boot 3, Spring Data JPA, PostgreSQL / H2
+- **Frontend**: Angular 17 (standalone), Angular Material
+- **Dev**: Docker Compose
 
-## Lancer le projet
+## Getting Started
 
-### Mode dev rapide (H2 en mémoire)
+### Quick dev mode (H2 in-memory)
 ```bash
-# Backend (depuis /backend)
+# Backend (from /backend)
 ./mvnw spring-boot:run
 
-# Frontend (depuis /frontend)
+# Frontend (from /frontend)
 npm install
 npm start
 ```
-- Backend : http://localhost:8080
-- Frontend : http://localhost:4200
-- H2 Console : http://localhost:8080/h2-console
+- Backend: http://localhost:8080
+- Frontend: http://localhost:4200
+- H2 Console: http://localhost:8080/h2-console
 
-### Mode Docker Compose (PostgreSQL)
+### Docker Compose mode (PostgreSQL)
 ```bash
 docker-compose up --build
 ```
-- App : http://localhost:4200
-- API : http://localhost:8080/api/lineups
+- App: http://localhost:4200
+- API: http://localhost:8080/api/lineups
 
 ## API Reference
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | /api/lineups | Liste avec filtres (?map=Mirage&side=T&type=SMOKE&search=window) |
-| GET | /api/lineups/{id} | Détail d'une lineup |
-| POST | /api/lineups | Créer une lineup |
-| PUT | /api/lineups/{id} | Modifier une lineup |
-| DELETE | /api/lineups/{id} | Supprimer une lineup |
-| POST | /api/users/{userId}/favorites/{lineupId} | Ajouter aux favoris |
-| DELETE | /api/users/{userId}/favorites/{lineupId} | Retirer des favoris |
-| GET | /api/users/{userId}/favorites | Liste des favoris |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/lineups | List with filters (?map=Mirage&side=T&type=SMOKE&search=window) |
+| GET | /api/lineups/{id} | Lineup detail |
+| POST | /api/lineups | Create a lineup |
+| PUT | /api/lineups/{id} | Update a lineup |
+| DELETE | /api/lineups/{id} | Delete a lineup |
+| POST | /api/users/{userId}/favorites/{lineupId} | Add to favorites |
+| DELETE | /api/users/{userId}/favorites/{lineupId} | Remove from favorites |
+| GET | /api/users/{userId}/favorites | List favorites |
 
 ## Structure
 ```

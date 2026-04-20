@@ -57,18 +57,19 @@
     .map-display {
       display: flex;
       gap: 24px;
-      flex-wrap: wrap;
       background: #1a1a1a;
       border-radius: 12px;
       padding: 20px;
+      overflow: hidden;
     }
   }
 
   // --- Zone de drag (remplace map-image-wrapper) ---
   .map-drag-zone {
-    flex: 1;
-    min-width: 300px;
-    max-width: 700px;
+    flex: 0 0 700px;
+    width: 700px;
+    min-width: 700px;
+    align-self: flex-start;
     border-radius: 8px;
     overflow: visible; // doit rester visible pour que le CDK drag preview fonctionne
     aspect-ratio: 1 / 1;
@@ -356,7 +357,8 @@
 
   // --- Infos de la map ---
   .map-info {
-    flex: 0 0 240px;
+    flex: 1 1 240px;
+    min-width: 240px;
     display: flex;
     flex-direction: column;
     gap: 16px;

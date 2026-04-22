@@ -1,28 +1,46 @@
--- V3 : Properly fix bytea columns that V2 converted to hex strings
--- V2 used ::text which converts bytea to hex like '\x48656c6c6f'
--- This migration drops the bad data and re-creates correct column types,
--- then the data will need to be re-imported
+-- V3 : Force correct column types by dropping and re-adding columns
+-- Tables are empty (V3 wipes data) so this is safe
 
--- utility_lineup: drop and recreate with correct types
 DELETE FROM pg_exec_lineup;
 DELETE FROM favorite_lineup;
 DELETE FROM utility_lineup;
 DELETE FROM pg_exec;
 
--- Now alter columns from their current state to proper varchar/text
--- After V2, columns may be text containing hex strings - just reset types
-ALTER TABLE utility_lineup ALTER COLUMN map_name TYPE VARCHAR(255);
-ALTER TABLE utility_lineup ALTER COLUMN name TYPE VARCHAR(255);
-ALTER TABLE utility_lineup ALTER COLUMN description TYPE TEXT;
-ALTER TABLE utility_lineup ALTER COLUMN side TYPE VARCHAR(10);
-ALTER TABLE utility_lineup ALTER COLUMN utility_type TYPE VARCHAR(20);
-ALTER TABLE utility_lineup ALTER COLUMN throw_position TYPE VARCHAR(255);
-ALTER TABLE utility_lineup ALTER COLUMN aim_position TYPE VARCHAR(255);
-ALTER TABLE utility_lineup ALTER COLUMN image_url TYPE VARCHAR(255);
-ALTER TABLE utility_lineup ALTER COLUMN video_url TYPE VARCHAR(255);
+-- utility_lineup: drop bytea columns and recreate as varchar/text
+ALTER TABLE utility_lineup
+    DROP COLUMN IF EXISTS map_name,
+    DROP COLUMN IF EXISTS name,
+    DROP COLUMN IF EXISTS description,
+    DROP COLUMN IF EXISTS side,
+    DROP COLUMN IF EXISTS utility_type,
+    DROP COLUMN IF EXISTS throw_position,
+    DROP COLUMN IF EXISTS aim_position,
+    DROP COLUMN IF EXISTS image_url,
+    DROP COLUMN IF EXISTS video_url;
 
-ALTER TABLE pg_exec ALTER COLUMN name TYPE VARCHAR(255);
-ALTER TABLE pg_exec ALTER COLUMN map_name TYPE VARCHAR(255);
-ALTER TABLE pg_exec ALTER COLUMN snapshot_json TYPE TEXT;
+ALTER TABLE utility_lineup
+    ADD COLUMN map_name VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN description TEXT,
+    ADD COLUMN side VARCHAR(10) NOT NULL DEFAULT '',
+    ADD COLUMN utility_type VARCHAR(20) NOT NULL DEFAULT '',
+    ADD COLUMN throw_position VARCHAR(255),
+    ADD COLUMN aim_position VARCHAR(255),
+    ADD COLUMN image_url VARCHAR(255),
+    ADD COLUMN video_url VARCHAR(255);
 
-ALTER TABLE app_user ALTER COLUMN username TYPE VARCHAR(255);
+-- pg_exec
+ALTER TABLE pg_exec
+    DROP COLUMN IF EXISTS name,
+    DROP COLUMN IF EXISTS map_name,
+    DROP COLUMN IF EXISTS snapshot_json;
+
+ALTER TABLE pg_exec
+    ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN map_name VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN snapshot_json TEXT NOT NULL DEFAULT '';
+
+-- app_user
+ALTER TABLE app_user DROP COLUMN IF EXISTS username;
+ALTER TABLE app_user ADD COLUMN username VARCHAR(255) NOT NULL DEFAULT '';
+ALTER TABLE app_user ADD CONSTRAINT app_user_username_unique UNIQUE (username);

@@ -16,11 +16,11 @@ public interface UtilityLineupRepository extends JpaRepository<UtilityLineup, UU
 
     @Query("""
         SELECT u FROM UtilityLineup u
-        WHERE (:mapName IS NULL OR LOWER(u.mapName) = LOWER(:mapName))
+        WHERE (:mapName IS NULL OR LOWER(u.mapName) = :mapName)
           AND (:side IS NULL OR u.side = :side)
           AND (:utilityType IS NULL OR u.utilityType = :utilityType)
-          AND (:search IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(u.description) LIKE LOWER(CONCAT('%', :search, '%')))
+          AND (:search IS NULL OR LOWER(u.name) LIKE CONCAT('%', :search, '%')
+               OR LOWER(u.description) LIKE CONCAT('%', :search, '%'))
     """)
     List<UtilityLineup> findByFilters(
         @Param("mapName") String mapName,

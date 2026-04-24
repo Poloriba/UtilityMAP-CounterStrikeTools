@@ -24,7 +24,9 @@ public class LineupService {
 
     @Transactional(readOnly = true)
     public List<LineupResponse> findAll(String mapName, Side side, UtilityType utilityType, String search) {
-        return lineupRepository.findByFilters(mapName, side, utilityType, search)
+        String mapNameLower = mapName != null ? mapName.toLowerCase() : null;
+        String searchLower = search != null ? search.toLowerCase() : null;
+        return lineupRepository.findByFilters(mapNameLower, side, utilityType, searchLower)
                 .stream()
                 .map(LineupResponse::from)
                 .toList();

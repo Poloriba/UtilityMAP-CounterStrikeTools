@@ -26,8 +26,14 @@ public class LineupService {
     public List<LineupResponse> findAll(String mapName, Side side, UtilityType utilityType, String search) {
         String mapNameLower = mapName != null ? mapName.toLowerCase() : null;
         String searchLower = search != null ? search.toLowerCase() : null;
-        return lineupRepository.findByFilters(mapNameLower, side, utilityType, searchLower)
+        return lineupRepository.findAll()
                 .stream()
+                .filter(u -> mapNameLower == null || u.getMapName().toLowerCase().equals(mapNameLower))
+                .filter(u -> side == null || u.getSide() == side)
+                .filter(u -> utilityType == null || u.getUtilityType() == utilityType)
+                .filter(u -> searchLower == null
+                        || u.getName().toLowerCase().contains(searchLower)
+                        || (u.getDescription() != null && u.getDescription().toLowerCase().contains(searchLower)))
                 .map(LineupResponse::from)
                 .toList();
     }

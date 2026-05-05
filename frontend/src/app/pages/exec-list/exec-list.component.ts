@@ -36,9 +36,9 @@ export class ExecListComponent implements OnInit {
   maps = CS2_MAPS;          // liste des maps pour le filtre
 
   constructor(
-    private execService: ExecService,
-    private router: Router,
-    private snackBar: MatSnackBar
+    private readonly execService: ExecService,
+    private readonly router: Router,
+    private readonly snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {

@@ -377,7 +377,7 @@
         &:hover:not([disabled]) {
           color: white !important;
           border-color: #888 !important;
-          background: rgba(255,255,255,0.06) !important;
+          background: #2a2a2a !important;
         }
 
         &[disabled] {
@@ -392,7 +392,7 @@
         .mat-icon { color: #fff !important; }
 
         &[disabled] {
-          color: #555 !important;
+          color: #bbb !important;
           background-color: #333 !important;
         }
       }
@@ -420,14 +420,14 @@
         font-weight: 500;
 
         &.active {
-          background: rgba(0, 230, 118, 0.15);
-          color: #00e676;
+          background: #16392a;
+          color: #fff;
           border: 1px solid #00e676;
         }
 
         &.inactive {
-          background: rgba(255,255,255,0.05);
-          color: #888;
+          background: #252525;
+          color: #ccc;
           border: 1px solid #444;
         }
 
@@ -734,13 +734,13 @@
   .popup-type-chip {
     &.smoke   { background: #455a64; color: #cfd8dc; }
     &.flash   { background: #f9a825; color: #333; }
-    &.molotov { background: #b71c1c; color: #ef9a9a; }
+    &.molotov { background: #b71c1c; color: #ffcdd2; }
     &.he      { background: #1b5e20; color: #a5d6a7; }
   }
 
   .popup-side-chip {
-    &.ct { background: #1565c0; color: #90caf9; }
-    &.t  { background: #bf360c; color: #ffcc80; }
+    &.ct { background: #1565c0; color: #fff; }
+    &.t  { background: #bf360c; color: #fff; }
   }
 
   .popup-name {

@@ -461,6 +461,11 @@
       flex-direction: column;
       gap: 10px;
       margin-top: 8px;
+
+      .undo-redo-group {
+        display: flex;
+        gap: 6px;
+      }
     }
 
     .map-id-hint {

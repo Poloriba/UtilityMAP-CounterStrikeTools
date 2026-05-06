@@ -244,6 +244,14 @@
             <mat-icon>replay</mat-icon>
             Reset positions
           </button>
+          <div class="undo-redo-group">
+            <button mat-stroked-button (click)="undo()" [disabled]="!canUndo" matTooltip="Annuler (Ctrl+Z)">
+              <mat-icon>undo</mat-icon>
+            </button>
+            <button mat-stroked-button (click)="redo()" [disabled]="!canRedo" matTooltip="Rétablir (Ctrl+Y)">
+              <mat-icon>redo</mat-icon>
+            </button>
+          </div>
           <button mat-stroked-button (click)="clearLinks()" [disabled]="links.length === 0" matTooltip="Supprimer toutes les flèches">
             <mat-icon>link_off</mat-icon>
             Effacer les flèches

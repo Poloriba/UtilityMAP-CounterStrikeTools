@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -105,6 +105,20 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
   links: Array<{ playerId: string; grenadeId: string; lineupId?: string }> = []; // flèches joueur → grenade dessinées
   deadPlayerIds: string[] = []; // IDs des joueurs actuellement éliminés (retirés du plateau)
 
+  // --- Undo / Redo ---
+  private history: Array<{
+    dragPositions: Record<string, { x: number; y: number }>;
+    grenades: GrenadeToken[];
+    grenadeCounters: Record<string, number>;
+    links: Array<{ playerId: string; grenadeId: string; lineupId?: string }>;
+    deadPlayerIds: string[];
+  }> = [];
+  private historyIndex = -1;
+  private readonly MAX_HISTORY = 50;
+
+  get canUndo(): boolean { return this.historyIndex > 0; }
+  get canRedo(): boolean { return this.historyIndex < this.history.length - 1; }
+
   // --- État du popup lineup (survol d'une flèche liée) ---
   hoveredLink: { playerId: string; grenadeId: string; lineupId?: string } | null = null; // lien survolé
   hoveredLineup: Lineup | null = null; // lineup résolue pour l'affichage du popup
@@ -157,6 +171,60 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {}
 
+  // --- Undo / Redo : raccourcis clavier ---
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.ctrlKey && event.key === 'z') {
+      event.preventDefault();
+      this.undo();
+    } else if (event.ctrlKey && event.key === 'y') {
+      event.preventDefault();
+      this.redo();
+    }
+  }
+
+  // Capture un snapshot de l'état du plateau dans l'historique
+  private pushHistory(): void {
+    const snapshot = {
+      dragPositions: { ...this.dragPositions },
+      grenades: this.grenades.map(g => ({ ...g })),
+      grenadeCounters: { ...this.grenadeCounters },
+      links: this.links.map(l => ({ ...l })),
+      deadPlayerIds: [...this.deadPlayerIds],
+    };
+    // Supprime les entrées après l'index courant (on écrase le futur)
+    this.history = this.history.slice(0, this.historyIndex + 1);
+    this.history.push(snapshot);
+    // Limite la taille de l'historique
+    if (this.history.length > this.MAX_HISTORY) {
+      this.history.shift();
+    }
+    this.historyIndex = this.history.length - 1;
+  }
+
+  // Restaure un snapshot donné sur le plateau
+  private restoreSnapshot(snapshot: typeof this.history[0]): void {
+    this.dragPositions = { ...snapshot.dragPositions };
+    this.livePositions = { ...snapshot.dragPositions };
+    this.grenades = snapshot.grenades.map(g => ({ ...g }));
+    this.grenadeCounters = { ...snapshot.grenadeCounters };
+    this.links = snapshot.links.map(l => ({ ...l }));
+    this.deadPlayerIds = [...snapshot.deadPlayerIds];
+    this.selectedPlayerId = null;
+  }
+
+  undo(): void {
+    if (!this.canUndo) return;
+    this.historyIndex--;
+    this.restoreSnapshot(this.history[this.historyIndex]);
+  }
+
+  redo(): void {
+    if (!this.canRedo) return;
+    this.historyIndex++;
+    this.restoreSnapshot(this.history[this.historyIndex]);
+  }
+
   // Remet tous les offsets de drag à {x:0, y:0} pour joueurs et grenades.
   // On crée un nouvel objet pour que Angular détecte le changement de référence et re-rende le template.
   initDragPositions(): void {
@@ -178,6 +246,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     this.saveExecName = '';
     this.selectedLineupIds = [];
     this.initDragPositions();
+    this.pushHistory();
   }
 
   // Ajoute un jeton grenade supplémentaire du type donné au plateau
@@ -188,6 +257,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     this.grenades = [...this.grenades, { id, ...def }];
     this.dragPositions = { ...this.dragPositions, [id]: { x: 0, y: 0 } };
     this.livePositions = { ...this.livePositions, [id]: { x: 0, y: 0 } };
+    this.pushHistory();
   }
 
   // Supprime un jeton grenade du plateau et nettoie les flèches qui le relient
@@ -202,6 +272,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
       // annule la sélection si la grenade ciblée vient d'être supprimée
       this.selectedPlayerId = null;
     }
+    this.pushHistory();
   }
 
   // Retire un joueur du plateau (éliminé) et supprime ses flèches
@@ -211,6 +282,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     }
     this.links = this.links.filter(l => l.playerId !== id);
     if (this.selectedPlayerId === id) this.selectedPlayerId = null;
+    this.pushHistory();
   }
 
   // Remet un joueur éliminé en jeu, à sa position par défaut
@@ -218,6 +290,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     this.deadPlayerIds = this.deadPlayerIds.filter(pid => pid !== id);
     this.dragPositions = { ...this.dragPositions, [id]: { x: 0, y: 0 } };
     this.livePositions = { ...this.livePositions, [id]: { x: 0, y: 0 } };
+    this.pushHistory();
   }
 
   // Change la map active : remet tout à zéro (jetons, grenades, flèches, exec) et charge les données de la nouvelle map
@@ -239,6 +312,10 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     });
     this.loadExecsForMap(map.name);
     this.loadLineupsForMap(map.name);
+    // Réinitialise l'historique pour la nouvelle map
+    this.history = [];
+    this.historyIndex = -1;
+    this.pushHistory();
   }
 
   onImageError(): void {
@@ -269,6 +346,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     const newPos = { x: base.x + event.distance.x, y: base.y + event.distance.y };
     this.dragPositions = { ...this.dragPositions, [id]: newPos };
     this.livePositions = { ...this.livePositions, [id]: newPos };
+    this.pushHistory();
   }
 
   // Sélectionne ou désélectionne un joueur pour créer une flèche.
@@ -294,12 +372,14 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
       this.links = [...this.links, { playerId: this.selectedPlayerId, grenadeId: id }];
     }
     this.selectedPlayerId = null;
+    this.pushHistory();
   }
 
   // Supprime toutes les flèches et annule la sélection en cours
   clearLinks(): void {
     this.links = [];
     this.selectedPlayerId = null;
+    this.pushHistory();
   }
 
   // Clic sur le fond de la map : annule la sélection d'un joueur sans créer de flèche
@@ -475,6 +555,10 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
 
     this.loadExecsForMap(map.name);
     this.loadLineupsForMap(map.name);
+    // Réinitialise l'historique pour l'exec chargée
+    this.history = [];
+    this.historyIndex = -1;
+    this.pushHistory();
   }
 
   // Sérialise l'état actuel du plateau en JSON (positions, grenades, flèches, éliminés) pour la sauvegarde

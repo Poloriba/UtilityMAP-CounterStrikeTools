@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { Exec } from '../../models/exec.model';
@@ -23,17 +24,25 @@ import { CS2_MAPS } from '../../models/map.model';
     CommonModule, RouterLink, FormsModule,
     MatButtonModule, MatIconModule, MatCardModule, MatChipsModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatSelectModule,
-    MatFormFieldModule, MatTooltipModule, MatDividerModule
+    MatFormFieldModule, MatInputModule, MatTooltipModule, MatDividerModule
   ],
   templateUrl: './exec-list.component.html',
   styleUrls: ['./exec-list.component.scss']
 })
 /** Page listant toutes les execs sauvegardées, avec filtre par map */
 export class ExecListComponent implements OnInit {
-  execs: Exec[] = [];      // liste des execs affichées
+  execs: Exec[] = [];      // liste des execs chargées depuis l'API
   loading = false;          // indicateur de chargement
   selectedMap: string = ''; // filtre map sélectionné (vide = toutes)
+  searchTerm: string = '';  // recherche par nom
   maps = CS2_MAPS;          // liste des maps pour le filtre
+
+  // Execs filtrées par la recherche textuelle (le filtre map est déjà appliqué côté API)
+  get filteredExecs(): Exec[] {
+    if (!this.searchTerm.trim()) return this.execs;
+    const term = this.searchTerm.toLowerCase().trim();
+    return this.execs.filter(e => e.name.toLowerCase().includes(term));
+  }
 
   constructor(
     private readonly execService: ExecService,

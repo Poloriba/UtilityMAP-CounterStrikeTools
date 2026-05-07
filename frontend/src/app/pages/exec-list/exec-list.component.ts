@@ -13,9 +13,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Exec } from '../../models/exec.model';
 import { ExecService } from '../../services/exec.service';
 import { CS2_MAPS } from '../../models/map.model';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-exec-list',
@@ -24,7 +26,8 @@ import { CS2_MAPS } from '../../models/map.model';
     CommonModule, RouterLink, FormsModule,
     MatButtonModule, MatIconModule, MatCardModule, MatChipsModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatSelectModule,
-    MatFormFieldModule, MatInputModule, MatTooltipModule, MatDividerModule
+    MatFormFieldModule, MatInputModule, MatTooltipModule, MatDividerModule,
+    MatDialogModule
   ],
   templateUrl: './exec-list.component.html',
   styleUrls: ['./exec-list.component.scss']
@@ -47,7 +50,8 @@ export class ExecListComponent implements OnInit {
   constructor(
     private readonly execService: ExecService,
     private readonly router: Router,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -70,13 +74,21 @@ export class ExecListComponent implements OnInit {
 
   // Supprime une exec après confirmation
   delete(exec: Exec): void {
-    if (!confirm(`Supprimer l'exec "${exec.name}" ?`)) return;
-    this.execService.delete(exec.id).subscribe({
-      next: () => {
-        this.execs = this.execs.filter(e => e.id !== exec.id);
-        this.snackBar.open('Exec supprimée', 'Fermer', { duration: 2500 });
-      },
-      error: () => this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 })
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Supprimer l\u2019exec',
+        message: `Voulez-vous vraiment supprimer l'exec \u00ab ${exec.name} \u00bb ?`
+      }
+    });
+    ref.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.execService.delete(exec.id).subscribe({
+        next: () => {
+          this.execs = this.execs.filter(e => e.id !== exec.id);
+          this.snackBar.open('Exec supprim\u00e9e', 'Fermer', { duration: 2500 });
+        },
+        error: () => this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 })
+      });
     });
   }
 

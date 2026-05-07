@@ -18,6 +18,7 @@ import { UTILITY_COLORS } from '../../models/utility-colors';
 import { Exec } from '../../models/exec.model';
 import { LineupService } from '../../services/lineup.service';
 import { FavoriteService } from '../../services/favorite.service';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 import { ExecService } from '../../services/exec.service';
 
 @Component({
@@ -93,12 +94,21 @@ export class LineupDetailComponent implements OnInit {
 
   // Supprime la lineup après confirmation et retourne à la liste
   deleteLineup(): void {
-    if (!this.lineup || !confirm(`Supprimer la lineup "${this.lineup.name}" ?`)) return;
-    this.lineupService.delete(this.lineup.id).subscribe({
-      next: () => {
-        this.snackBar.open('Lineup supprimée', '', { duration: 2000 });
-        this.router.navigate(['/lineups']);
+    if (!this.lineup) return;
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Supprimer la lineup',
+        message: `Voulez-vous vraiment supprimer la lineup \u00ab ${this.lineup.name} \u00bb ?`
       }
+    });
+    ref.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.lineupService.delete(this.lineup!.id).subscribe({
+        next: () => {
+          this.snackBar.open('Lineup supprim\u00e9e', '', { duration: 2000 });
+          this.router.navigate(['/lineups']);
+        }
+      });
     });
   }
 

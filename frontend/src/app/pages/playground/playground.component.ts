@@ -15,6 +15,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CS2_MAPS, GameMap } from '../../models/map.model';
 import { Lineup } from '../../models/lineup.model';
@@ -22,6 +23,7 @@ import { UTILITY_COLORS, UTILITY_COLORS_LIGHT } from '../../models/utility-color
 import { Exec, ExecRequest, ExecSnapshot } from '../../models/exec.model';
 import { LineupService } from '../../services/lineup.service';
 import { ExecService } from '../../services/exec.service';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 
 // Représente un jeton joueur positionnable sur la map
 export interface PlayerToken {
@@ -63,7 +65,7 @@ const GRENADE_DEFS = [
     MatProgressSpinnerModule, MatTooltipModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatListModule, MatSnackBarModule, MatDividerModule,
-    MatMenuModule, OverlayModule
+    MatMenuModule, MatDialogModule, OverlayModule
   ],
   templateUrl: './playground.component.html',
   styleUrls: ['./playground.component.scss']
@@ -153,7 +155,8 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private lineupService: LineupService,
     private execService: ExecService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -620,15 +623,23 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
   // Supprime l'exec courante après confirmation et remet le panneau à vide
   deleteCurrentExec(): void {
     if (!this.currentExecId) return;
-    if (!confirm(`Supprimer l'exec "${this.saveExecName}" ?`)) return;
-    this.execService.delete(this.currentExecId).subscribe({
-      next: () => {
-        this.currentExecId = null;
-        this.saveExecName = '';
-        this.selectedLineupIds = [];
-        this.loadExecsForMap(this.selectedMap!.name);
-        this.snackBar.open('Exec supprimée', 'Fermer', { duration: 2500 });
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Supprimer l\u2019exec',
+        message: `Voulez-vous vraiment supprimer l'exec \u00ab ${this.saveExecName} \u00bb ?`
       }
+    });
+    ref.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.execService.delete(this.currentExecId!).subscribe({
+        next: () => {
+          this.currentExecId = null;
+          this.saveExecName = '';
+          this.selectedLineupIds = [];
+          this.loadExecsForMap(this.selectedMap!.name);
+          this.snackBar.open('Exec supprim\u00e9e', 'Fermer', { duration: 2500 });
+        }
+      });
     });
   }
 

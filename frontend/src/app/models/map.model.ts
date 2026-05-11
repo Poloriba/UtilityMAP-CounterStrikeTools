@@ -51,5 +51,12 @@ export const CS2_MAPS: GameMap[] = [
     radarUrl: 'assets/maps/de_overpass.png',
     color: '#5d7a5d',
     activeDuty: true
+  },
+  {
+    id: 'de_cache',
+    name: 'Cache',
+    radarUrl: 'assets/maps/de_cache.png',
+    color: '#5d7a5d',
+    activeDuty: true
   }
 ];

@@ -29,7 +29,7 @@ export const routes: Routes = [
   {
     path: 'playground',
     loadComponent: () =>
-      import('./pages/playground/playground.component').then(m => m.PlaygroundComponent),
+      import('./pages/playground-router/playground-router.component').then(m => m.PlaygroundRouterComponent),
     data: { animation: 5 }
   },
   {

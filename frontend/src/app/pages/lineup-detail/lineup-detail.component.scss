@@ -129,4 +129,21 @@
       .exec-lineup-count { font-size: 11px; color: #888; }
     }
   }
+
+  @media (max-width: 600px) {
+    .detail-header .lineup-name { font-size: 20px; }
+    .detail-card .positions-section { gap: 16px; }
+    .detail-card .media-section,
+    .detail-card .actions {
+      flex-direction: column;
+      align-items: stretch;
+      button, a { width: 100%; }
+    }
+    .add-to-exec-section .add-to-exec-row {
+      flex-direction: column;
+      align-items: stretch;
+      mat-form-field { min-width: 0; }
+      button { width: 100%; }
+    }
+  }
 }

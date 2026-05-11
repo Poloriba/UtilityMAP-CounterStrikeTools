@@ -1,0 +1,155 @@
+<div class="playground-mobile-page">
+
+  <h1 class="page-title">
+    <mat-icon>map</mat-icon> Playground
+  </h1>
+
+  <!-- ===== VUE LISTE : sélection de map + execs ===== -->
+  <ng-container *ngIf="!currentExec">
+
+    <!-- Sélecteur de map -->
+    <mat-form-field appearance="outline" class="map-select">
+      <mat-label>Map</mat-label>
+      <mat-select [value]="selectedMap?.id">
+        <mat-option *ngFor="let map of maps" [value]="map.id" (click)="selectMap(map)" (keydown.enter)="selectMap(map)">
+          {{ map.name }} <span *ngIf="map.activeDuty" class="active-tag">· Active Duty</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="info-banner">
+      <mat-icon>info</mat-icon>
+      <span>Vue mobile en mode consultation. Utilisez un écran plus large pour éditer.</span>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loadingExecs" class="loading-wrapper">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="!loadingExecs && execs.length === 0" class="empty-state">
+      <mat-icon>folder_open</mat-icon>
+      <p>Aucune exec sur cette map</p>
+      <small>Créez-en une depuis le Playground PC</small>
+    </div>
+
+    <!-- Liste des execs -->
+    <div *ngIf="!loadingExecs && execs.length > 0" class="execs-list">
+      <mat-card *ngFor="let exec of execs" class="exec-card" (click)="openExec(exec)" (keydown.enter)="openExec(exec)" tabindex="0" role="button">
+        <mat-card-header>
+          <mat-card-title>{{ exec.name }}</mat-card-title>
+          <mat-card-subtitle>
+            <mat-icon>schedule</mat-icon>
+            {{ exec.createdAt | date:'dd/MM/yyyy' }}
+            <span class="lineup-count">· {{ exec.lineups.length }} lineup{{ exec.lineups.length > 1 ? 's' : '' }}</span>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content *ngIf="exec.lineups.length > 0">
+          <div class="lineup-chips">
+            <mat-chip *ngFor="let l of exec.lineups" [ngClass]="l.utilityType.toLowerCase()">
+              {{ l.name }}
+            </mat-chip>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </ng-container>
+
+  <!-- ===== VUE DÉTAIL : aperçu d'un exec ===== -->
+  <ng-container *ngIf="currentExec && currentSnapshot && selectedMap">
+    <div class="exec-detail-header">
+      <button mat-icon-button (click)="closeExec()" aria-label="Retour">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2 class="exec-name">{{ currentExec.name }}</h2>
+    </div>
+
+    <!-- Map preview avec tokens en read-only -->
+    <div class="map-preview" [style.background-color]="selectedMap.color">
+      <img
+        *ngIf="!imageError"
+        [src]="selectedMap.radarUrl"
+        [alt]="selectedMap.name + ' radar'"
+        class="map-radar"
+        (error)="onImageError()"
+        draggable="false"
+      />
+      <div *ngIf="imageError" class="map-fallback">
+        <mat-icon>map</mat-icon>
+        <span>{{ selectedMap.name }}</span>
+      </div>
+
+      <!-- Joueurs vivants -->
+      <div
+        *ngFor="let player of alivePlayers"
+        class="player-token"
+        [class.ct]="player.side === 'CT'"
+        [class.t-side]="player.side === 'T'"
+        [style.left.%]="posX(player.id, player.defaultX)"
+        [style.top.%]="posY(player.id, player.defaultY)"
+      >{{ player.number }}</div>
+
+      <!-- Grenades -->
+      <div
+        *ngFor="let g of currentSnapshot.grenades"
+        class="grenade-token"
+        [ngClass]="g.type"
+        [style.left.%]="posX(g.id, g.defaultX)"
+        [style.top.%]="posY(g.id, g.defaultY)"
+      >{{ g.label }}</div>
+
+      <!-- Flèches SVG (joueurs vivants uniquement) -->
+      <svg class="arrows-overlay" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <ng-container *ngFor="let link of currentSnapshot.links">
+          <ng-container *ngIf="!(currentSnapshot.deadPlayerIds || []).includes(link.playerId)">
+            <line
+              [attr.x1]="posX(link.playerId, getPlayerDefault(link.playerId, 'x'))"
+              [attr.y1]="posY(link.playerId, getPlayerDefault(link.playerId, 'y'))"
+              [attr.x2]="posX(link.grenadeId, getGrenadeDefault(link.grenadeId, 'x'))"
+              [attr.y2]="posY(link.grenadeId, getGrenadeDefault(link.grenadeId, 'y'))"
+              [attr.stroke]="link.lineupId ? '#ffd740' : '#ffffff80'"
+              stroke-width="0.4"
+              stroke-dasharray="1,0.5"
+              vector-effect="non-scaling-stroke"
+            />
+          </ng-container>
+        </ng-container>
+      </svg>
+    </div>
+
+    <!-- Légende grenades -->
+    <div class="grenade-legend">
+      <span class="legend-item smoke"><span class="dot"></span>Smoke</span>
+      <span class="legend-item flash"><span class="dot"></span>Flash</span>
+      <span class="legend-item molotov"><span class="dot"></span>Molotov</span>
+      <span class="legend-item he"><span class="dot"></span>HE</span>
+    </div>
+
+    <!-- Lineups associées -->
+    <div class="lineups-section" *ngIf="currentExec.lineups.length > 0">
+      <h3>
+        <mat-icon>gps_fixed</mat-icon>
+        Lineups associées ({{ currentExec.lineups.length }})
+      </h3>
+      <mat-card class="lineup-item" *ngFor="let lineup of currentExec.lineups" [routerLink]="['/lineups', lineup.id]">
+        <div class="lineup-content">
+          <span class="type-badge" [style.background-color]="typeColors[lineup.utilityType]">
+            {{ lineup.utilityType }}
+          </span>
+          <div class="lineup-info">
+            <div class="lineup-name">{{ lineup.name }}</div>
+            <div class="lineup-meta">{{ lineup.side }} · {{ lineup.mapName }}</div>
+          </div>
+          <mat-icon class="chevron">chevron_right</mat-icon>
+        </div>
+      </mat-card>
+    </div>
+
+    <div class="empty-lineups" *ngIf="currentExec.lineups.length === 0">
+      <mat-icon>info_outline</mat-icon>
+      <span>Aucune lineup associée à cet exec</span>
+    </div>
+  </ng-container>
+
+</div>

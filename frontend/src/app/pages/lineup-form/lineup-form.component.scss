@@ -46,4 +46,13 @@
     gap: 12px;
     margin-top: 16px;
   }
+
+  @media (max-width: 600px) {
+    .form-header h1 { font-size: 20px; }
+    .form-row mat-form-field { min-width: 0; flex: 1 1 100%; }
+    .form-actions {
+      flex-direction: column-reverse;
+      button { width: 100%; }
+    }
+  }
 }

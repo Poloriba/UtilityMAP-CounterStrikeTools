@@ -76,7 +76,7 @@ import { ThemeService } from './services/theme.service';
 })
 export class AppComponent implements OnInit {
   theme = inject(ThemeService);
-  private contexts = inject(ChildrenOutletContexts);
+  private readonly contexts = inject(ChildrenOutletContexts);
 
   ngOnInit(): void {
     this.theme.applyTheme();

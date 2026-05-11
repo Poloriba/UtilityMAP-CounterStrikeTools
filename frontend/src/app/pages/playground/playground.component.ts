@@ -638,7 +638,8 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
           this.selectedLineupIds = [];
           this.loadExecsForMap(this.selectedMap!.name);
           this.snackBar.open('Exec supprim\u00e9e', 'Fermer', { duration: 2500 });
-        }
+        },
+        error: () => this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 })
       });
     });
   }

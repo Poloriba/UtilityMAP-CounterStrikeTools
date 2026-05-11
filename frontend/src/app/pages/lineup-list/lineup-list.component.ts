@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Lineup, LineupFilter, Side, UtilityType } from '../../models/lineup.model';
 import { UTILITY_COLORS } from '../../models/utility-colors';
 import { CS2_MAPS } from '../../models/map.model';
@@ -24,7 +25,7 @@ import { LineupService } from '../../services/lineup.service';
     CommonModule, RouterLink, ReactiveFormsModule,
     MatCardModule, MatChipsModule, MatSelectModule, MatFormFieldModule,
     MatInputModule, MatButtonModule, MatIconModule,
-    MatProgressSpinnerModule, MatBadgeModule
+    MatProgressSpinnerModule, MatBadgeModule, MatSnackBarModule
   ],
   templateUrl: './lineup-list.component.html',
   styleUrls: ['./lineup-list.component.scss']
@@ -42,7 +43,7 @@ export class LineupListComponent implements OnInit {
   // Couleurs associées à chaque type (utilisées pour les badges dans le template)
   typeColors = UTILITY_COLORS;
 
-  constructor(private lineupService: LineupService, private fb: FormBuilder, private route: ActivatedRoute) {
+  constructor(private lineupService: LineupService, private fb: FormBuilder, private route: ActivatedRoute, private snackBar: MatSnackBar) {
     this.filterForm = this.fb.group({
       map: [null],
       side: [null],
@@ -76,7 +77,10 @@ export class LineupListComponent implements OnInit {
 
     this.lineupService.getAll(filter).subscribe({
       next: data => { this.lineups = data; this.loading = false; },
-      error: () => { this.loading = false; }
+      error: () => {
+        this.loading = false;
+        this.snackBar.open('Erreur lors du chargement des lineups', 'Fermer', { duration: 3000 });
+      }
     });
   }
 

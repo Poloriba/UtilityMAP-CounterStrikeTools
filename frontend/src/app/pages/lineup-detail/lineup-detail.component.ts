@@ -88,7 +88,8 @@ export class LineupDetailComponent implements OnInit {
           this.lineup!.favorite ? 'Ajouté aux favoris' : 'Retiré des favoris',
           '', { duration: 2000 }
         );
-      }
+      },
+      error: () => this.snackBar.open('Erreur lors de la mise à jour des favoris', 'Fermer', { duration: 3000 })
     });
   }
 
@@ -107,7 +108,8 @@ export class LineupDetailComponent implements OnInit {
         next: () => {
           this.snackBar.open('Lineup supprim\u00e9e', '', { duration: 2000 });
           this.router.navigate(['/lineups']);
-        }
+        },
+        error: () => this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 })
       });
     });
   }

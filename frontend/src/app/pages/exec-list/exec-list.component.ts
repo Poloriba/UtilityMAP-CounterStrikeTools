@@ -63,7 +63,10 @@ export class ExecListComponent implements OnInit {
     this.loading = true;
     this.execService.getAll(this.selectedMap || undefined).subscribe({
       next: execs => { this.execs = execs; this.loading = false; },
-      error: () => { this.loading = false; }
+      error: () => {
+        this.loading = false;
+        this.snackBar.open('Erreur lors du chargement des execs', 'Fermer', { duration: 3000 });
+      }
     });
   }
 

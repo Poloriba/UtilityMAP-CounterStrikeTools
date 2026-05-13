@@ -718,9 +718,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
     ctx.restore();
   }
 
-  // Génère et télécharge un PNG du plateau en dessinant manuellement sur un canvas.
-  // On réutilise exactement les mêmes données de position (livePositions + defaultX/Y)
-  // que getTokenCenter() pour garantir une correspondance parfaite avec l'affichage.
+  // Génère et télécharge un PNG amélioré : header (nom exec + map), map avec tokens, légende automatique.
   exporting = false;
   async exportPng(): Promise<void> {
     if (!this.dragZoneRef) return;
@@ -728,69 +726,202 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
 
     try {
       const zone = this.dragZoneRef.nativeElement;
-      const w = zone.offsetWidth;
-      const h = zone.offsetHeight;
-      const scale = 2; // double résolution (rendu net sur écran Retina)
+      const mapW = zone.offsetWidth;
+      const mapH = zone.offsetHeight;
+      const scale = 2;
       const TOKEN_SIZE = 32;
 
+      // Dimensions de l'image finale
+      const PADDING = 24;
+      const HEADER_H = 56;
+      const LEGEND_LINE_H = 22;
+      const LEGEND_PADDING = 16;
+
+      // Construire la légende : lineups liées
+      const linkedLineups = this.links
+        .filter(l => l.lineupId)
+        .map(l => {
+          const lineup = this.mapLineups.find(ml => ml.id === l.lineupId);
+          return lineup ? { type: lineup.utilityType, name: lineup.name } : null;
+        })
+        .filter(Boolean) as { type: string; name: string }[];
+      // Déduplique
+      const uniqueLineups = linkedLineups.filter(
+        (l, i, arr) => arr.findIndex(a => a.name === l.name) === i
+      );
+
+      const legendLines = uniqueLineups.length;
+      const legendH = legendLines > 0 ? LEGEND_PADDING * 2 + legendLines * LEGEND_LINE_H + 30 : 60;
+      const totalW = mapW + PADDING * 2;
+      const totalH = HEADER_H + mapH + legendH + PADDING * 2;
+
       const canvas = document.createElement('canvas');
-      canvas.width  = w * scale;
-      canvas.height = h * scale;
+      canvas.width = totalW * scale;
+      canvas.height = totalH * scale;
       const ctx = canvas.getContext('2d')!;
       ctx.scale(scale, scale);
 
-      // 1. Fond coloré de la map
-      ctx.fillStyle = this.selectedMap?.color ?? '#1a1a2e';
-      ctx.fillRect(0, 0, w, h);
+      // ===== FOND GLOBAL =====
+      ctx.fillStyle = '#121218';
+      ctx.fillRect(0, 0, totalW, totalH);
 
-      // 2. Image radar (chargée de façon asynchrone)
+      // ===== HEADER =====
+      ctx.fillStyle = '#1b1b2f';
+      ctx.fillRect(0, 0, totalW, HEADER_H);
+
+      // Logo icône
+      ctx.fillStyle = '#e67e22';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('◎', PADDING, HEADER_H / 2);
+
+      // Nom de la map
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px sans-serif';
+      const mapName = this.selectedMap?.name ?? 'Map';
+      ctx.fillText(mapName, PADDING + 24, HEADER_H / 2);
+
+      // Nom de l'exec
+      const execName = this.saveExecName.trim() || 'Playground';
+      ctx.fillStyle = '#aaaaaa';
+      ctx.font = '13px sans-serif';
+      const execTextW = ctx.measureText(execName).width;
+      ctx.fillText(execName, totalW - PADDING - execTextW, HEADER_H / 2);
+
+      // Séparateur sous le header
+      ctx.fillStyle = '#e67e22';
+      ctx.fillRect(0, HEADER_H - 2, totalW, 2);
+
+      // ===== MAP ZONE =====
+      const mapX = PADDING;
+      const mapY = HEADER_H + PADDING;
+
+      // Fond de la map
+      ctx.fillStyle = this.selectedMap?.color ?? '#1a1a2e';
+      ctx.fillRect(mapX, mapY, mapW, mapH);
+
+      // Image radar
       if (!this.imageError && this.selectedMap) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         await new Promise<void>(resolve => {
-          img.onload  = () => resolve();
-          img.onerror = () => resolve(); // on continue même sans l'image
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
           img.src = this.selectedMap!.radarUrl;
         });
         if (img.complete && img.naturalWidth > 0) {
-          // object-fit: contain — même comportement que le CSS
-          const scale_img = Math.min(w / img.naturalWidth, h / img.naturalHeight);
-          const dw = img.naturalWidth  * scale_img;
+          const scale_img = Math.min(mapW / img.naturalWidth, mapH / img.naturalHeight);
+          const dw = img.naturalWidth * scale_img;
           const dh = img.naturalHeight * scale_img;
-          const dx = (w - dw) / 2;
-          const dy = (h - dh) / 2;
+          const dx = mapX + (mapW - dw) / 2;
+          const dy = mapY + (mapH - dh) / 2;
           ctx.drawImage(img, dx, dy, dw, dh);
         }
       }
 
-      // 3. Flèches (dessinées sous les jetons)
+      // Flèches
       for (const link of this.links) {
-        const from  = this.getTokenCenter(link.playerId);
-        const to    = this.getTokenCenter(link.grenadeId);
-        const color = this.getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726';
-        this.drawArrow(ctx, from, to, color);
+        const from = this.getTokenCenter(link.playerId);
+        const to = this.getTokenCenter(link.grenadeId);
+        const offsetFrom = { x: mapX + from.x, y: mapY + from.y };
+        const offsetTo = { x: mapX + to.x, y: mapY + to.y };
+        const sideColor = this.getPlayerSide(link.playerId) === 'CT' ? '#42a5f5' : '#ffa726';
+        const color = link.lineupId
+          ? (this.GRENADE_COLORS[this.getGrenadeType(link.grenadeId)] ?? '#ffd740')
+          : sideColor;
+        this.drawArrow(ctx, offsetFrom, offsetTo, color);
       }
 
-      // 4. Jetons joueurs vivants uniquement
+      // Joueurs
       for (const player of this.alivePlayers) {
         const live = this.livePositions[player.id] ?? { x: 0, y: 0 };
-        const x = (player.defaultX / 100) * w + live.x;
-        const y = (player.defaultY / 100) * h + live.y;
+        const x = mapX + (player.defaultX / 100) * mapW + live.x;
+        const y = mapY + (player.defaultY / 100) * mapH + live.y;
         this.drawPlayerToken(ctx, player, x, y, TOKEN_SIZE);
       }
 
-      // 5. Jetons grenades
+      // Grenades
       for (const grenade of this.grenades) {
         const live = this.livePositions[grenade.id] ?? { x: 0, y: 0 };
-        const x = (grenade.defaultX / 100) * w + live.x;
-        const y = (grenade.defaultY / 100) * h + live.y;
+        const x = mapX + (grenade.defaultX / 100) * mapW + live.x;
+        const y = mapY + (grenade.defaultY / 100) * mapH + live.y;
         this.drawGrenadeToken(ctx, grenade, x, y, TOKEN_SIZE);
       }
 
-      // 6. Téléchargement
-      const mapName  = this.selectedMap?.name ?? 'map';
-      const execName = this.saveExecName.trim() || 'exec';
-      const safeName = `${mapName}_${execName}`.replace(/[^a-z0-9_\-]/gi, '_');
+      // ===== LÉGENDE =====
+      const legendY = mapY + mapH + PADDING;
+
+      // Ligne de légende couleur joueurs
+      ctx.fillStyle = '#888';
+      ctx.font = '11px sans-serif';
+      ctx.textBaseline = 'middle';
+      const playerLegendY = legendY + 10;
+
+      // CT
+      ctx.beginPath();
+      ctx.arc(PADDING + 6, playerLegendY, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#42a5f5';
+      ctx.fill();
+      ctx.fillStyle = '#ccc';
+      ctx.fillText('CT', PADDING + 16, playerLegendY);
+
+      // T
+      ctx.beginPath();
+      ctx.arc(PADDING + 50, playerLegendY, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffa726';
+      ctx.fill();
+      ctx.fillStyle = '#ccc';
+      ctx.fillText('T', PADDING + 60, playerLegendY);
+
+      // Grenades legend
+      const grenadeTypes: Array<{ type: string; label: string; color: string }> = [
+        { type: 'smoke', label: 'Smoke', color: this.GRENADE_COLORS['smoke'] },
+        { type: 'flash', label: 'Flash', color: this.GRENADE_COLORS['flash'] },
+        { type: 'molotov', label: 'Molotov', color: this.GRENADE_COLORS['molotov'] },
+        { type: 'he', label: 'HE', color: this.GRENADE_COLORS['he'] },
+      ];
+      let gx = PADDING + 100;
+      for (const gt of grenadeTypes) {
+        ctx.fillStyle = gt.color;
+        ctx.fillRect(gx, playerLegendY - 5, 10, 10);
+        ctx.fillStyle = '#ccc';
+        ctx.font = '11px sans-serif';
+        ctx.fillText(gt.label, gx + 14, playerLegendY);
+        gx += ctx.measureText(gt.label).width + 30;
+      }
+
+      // Lineups associées
+      if (uniqueLineups.length > 0) {
+        const lineupsStartY = playerLegendY + 24;
+        ctx.fillStyle = '#ffd740';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('Lineups associées :', PADDING, lineupsStartY);
+
+        ctx.font = '12px sans-serif';
+        uniqueLineups.forEach((l, i) => {
+          const ly = lineupsStartY + 20 + i * LEGEND_LINE_H;
+          const typeColor = this.GRENADE_COLORS[l.type.toLowerCase()] ?? '#888';
+          // Pastille type
+          ctx.fillStyle = typeColor;
+          ctx.fillRect(PADDING, ly - 5, 8, 12);
+          // Type
+          ctx.fillStyle = '#aaa';
+          ctx.fillText(l.type, PADDING + 14, ly + 1);
+          // Nom
+          ctx.fillStyle = '#e0e0e0';
+          ctx.fillText(l.name, PADDING + 70, ly + 1);
+        });
+      }
+
+      // Watermark
+      ctx.fillStyle = '#555';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('UtilityMAP CS2', totalW - PADDING, totalH - 8);
+      ctx.textAlign = 'left';
+
+      // ===== TÉLÉCHARGEMENT =====
+      const safeName = `${mapName}_${execName}`.replaceAll(/[^a-z0-9_-]/gi, '_');
       const link = document.createElement('a');
       link.download = `${safeName}.png`;
       link.href = canvas.toDataURL('image/png');

@@ -98,6 +98,14 @@ html {
     }
     .mat-mdc-input-element, .mat-mdc-select-value { color: var(--text-primary) !important; }
     .mat-mdc-floating-label { color: var(--text-muted) !important; }
+    input::placeholder, textarea::placeholder {
+      color: var(--text-hint) !important;
+      opacity: 1;
+    }
+    .mdc-text-field--outlined .mdc-text-field__input::placeholder {
+      color: var(--text-hint) !important;
+      opacity: 1;
+    }
   }
 
   // Select panels (dropdown overlay lives in CDK overlay, outside components)

@@ -11,7 +11,10 @@
           <mat-label>Map</mat-label>
           <mat-select formControlName="map">
             <mat-option [value]="null">Toutes</mat-option>
-            <mat-option *ngFor="let m of maps" [value]="m">{{ m }}</mat-option>
+            <mat-option *ngFor="let m of maps" [value]="m.name">
+              <img [src]="m.iconUrl" class="option-icon" alt="" />
+              {{ m.name }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
 
@@ -19,7 +22,10 @@
           <mat-label>Side</mat-label>
           <mat-select formControlName="side">
             <mat-option [value]="null">Tous</mat-option>
-            <mat-option *ngFor="let s of sides" [value]="s">{{ s }}</mat-option>
+            <mat-option *ngFor="let s of sides" [value]="s">
+              <img [src]="sideIcons[s]" class="option-icon" alt="" />
+              {{ s }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
 
@@ -27,7 +33,10 @@
           <mat-label>Type</mat-label>
           <mat-select formControlName="type">
             <mat-option [value]="null">Tous</mat-option>
-            <mat-option *ngFor="let t of types" [value]="t">{{ t }}</mat-option>
+            <mat-option *ngFor="let t of types" [value]="t">
+              <img [src]="grenadeIcons[t]" class="option-icon" alt="" />
+              {{ t }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
 
@@ -61,11 +70,17 @@
     >
       <mat-card-header>
         <mat-card-title>{{ lineup.name }}</mat-card-title>
-        <mat-card-subtitle>{{ lineup.mapName }} · {{ lineup.side }}</mat-card-subtitle>
+        <mat-card-subtitle>
+          <img [src]="getMapIcon(lineup.mapName)" class="card-icon" alt="" />
+          {{ lineup.mapName }} ·
+          <img [src]="sideIcons[lineup.side]" class="card-icon" alt="" />
+          {{ lineup.side }}
+        </mat-card-subtitle>
         <span
           class="type-badge"
           [style.background-color]="typeColors[lineup.utilityType]"
         >
+          <img [src]="grenadeIcons[lineup.utilityType]" class="badge-icon" alt="" />
           {{ lineup.utilityType }}
         </span>
       </mat-card-header>

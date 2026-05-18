@@ -16,7 +16,10 @@
       <mat-label>Filtrer par map</mat-label>
       <mat-select [(ngModel)]="selectedMap" (ngModelChange)="loadExecs()">
         <mat-option value="">Toutes les maps</mat-option>
-        <mat-option *ngFor="let map of maps" [value]="map.name">{{ map.name }}</mat-option>
+        <mat-option *ngFor="let map of maps" [value]="map.name">
+          <img [src]="map.iconUrl" class="option-icon" alt="" />
+          {{ map.name }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
     <mat-form-field appearance="outline">
@@ -44,7 +47,7 @@
       <mat-card-header>
         <mat-card-title>{{ exec.name }}</mat-card-title>
         <mat-card-subtitle>
-          <mat-icon class="map-icon">map</mat-icon>
+          <img [src]="getMapIcon(exec.mapName)" class="card-icon" alt="" />
           {{ exec.mapName }}
         </mat-card-subtitle>
       </mat-card-header>

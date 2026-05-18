@@ -112,4 +112,8 @@ export class ExecListComponent implements OnInit {
       error: () => this.snackBar.open('Erreur lors de la duplication', 'Fermer', { duration: 3000 })
     });
   }
+
+  getMapIcon(mapName: string): string {
+    return this.maps.find(m => m.name === mapName)?.iconUrl ?? '';
+  }
 }

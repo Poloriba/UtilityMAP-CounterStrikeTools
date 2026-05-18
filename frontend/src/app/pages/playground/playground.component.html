@@ -14,6 +14,7 @@
       (click)="selectMap(map)"
       [matTooltip]="map.activeDuty ? 'Active Duty' : 'Hors pool'"
     >
+      <img [src]="map.iconUrl" class="map-btn-icon" alt="" />
       <span class="map-name">{{ map.name }}</span>
       <span *ngIf="map.activeDuty" class="active-dot"></span>
     </button>

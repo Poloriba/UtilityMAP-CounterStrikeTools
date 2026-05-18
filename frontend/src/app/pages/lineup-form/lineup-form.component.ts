@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { LineupRequest, Side, UtilityType } from '../../models/lineup.model';
-import { CS2_MAPS } from '../../models/map.model';
+import { CS2_MAPS, SIDE_ICONS, GRENADE_ICONS } from '../../models/map.model';
 import { LineupService } from '../../services/lineup.service';
 
 @Component({
@@ -33,9 +33,11 @@ export class LineupFormComponent implements OnInit {
   loading = false;     // true pendant le chargement de la lineup existante en mode édition
   saving = false;      // true pendant l'envoi du formulaire
 
-  maps = CS2_MAPS.map(m => m.name);
+  maps = CS2_MAPS;
   sides: Side[] = ['T', 'CT'];
   types: UtilityType[] = ['SMOKE', 'FLASH', 'MOLOTOV', 'HE'];
+  sideIcons = SIDE_ICONS;
+  grenadeIcons = GRENADE_ICONS;
 
   constructor(
     private fb: FormBuilder,

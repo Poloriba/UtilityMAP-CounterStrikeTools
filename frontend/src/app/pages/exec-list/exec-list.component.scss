@@ -1,4 +1,14 @@
 .exec-list-page {
+  .option-icon,
+  .card-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 4px;
+    border-radius: 2px;
+  }
+
   .page-header {
     display: flex;
     align-items: center;

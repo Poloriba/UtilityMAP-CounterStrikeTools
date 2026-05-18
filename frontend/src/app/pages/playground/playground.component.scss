@@ -30,6 +30,13 @@
     align-items: center;
     gap: 6px;
 
+    .map-btn-icon {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      border-radius: 3px;
+    }
+
     &:hover {
       background: var(--map-color);
       color: white;

@@ -15,6 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Lineup } from '../../models/lineup.model';
 import { UTILITY_COLORS } from '../../models/utility-colors';
+import { CS2_MAPS, SIDE_ICONS, GRENADE_ICONS } from '../../models/map.model';
 import { Exec } from '../../models/exec.model';
 import { LineupService } from '../../services/lineup.service';
 import { FavoriteService } from '../../services/favorite.service';
@@ -42,6 +43,9 @@ export class LineupDetailComponent implements OnInit {
 
   // Couleurs associées à chaque type de grenade (utilisées dans le template)
   typeColors = UTILITY_COLORS;
+  sideIcons = SIDE_ICONS;
+  grenadeIcons = GRENADE_ICONS;
+  maps = CS2_MAPS;
 
   constructor(
     private route: ActivatedRoute,
@@ -126,5 +130,9 @@ export class LineupDetailComponent implements OnInit {
       },
       error: () => this.snackBar.open('Erreur lors de l\'ajout', 'Fermer', { duration: 3000 })
     });
+  }
+
+  getMapIcon(mapName: string): string {
+    return this.maps.find(m => m.name === mapName)?.iconUrl ?? '';
   }
 }

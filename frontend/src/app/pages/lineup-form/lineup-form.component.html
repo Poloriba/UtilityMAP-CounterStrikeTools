@@ -17,7 +17,10 @@
           <mat-form-field appearance="outline">
             <mat-label>Map *</mat-label>
             <mat-select formControlName="mapName">
-              <mat-option *ngFor="let m of maps" [value]="m">{{ m }}</mat-option>
+              <mat-option *ngFor="let m of maps" [value]="m.name">
+                <img [src]="m.iconUrl" class="option-icon" alt="" />
+                {{ m.name }}
+              </mat-option>
             </mat-select>
             <mat-error *ngIf="form.get('mapName')?.hasError('required')">La map est obligatoire</mat-error>
           </mat-form-field>
@@ -25,7 +28,10 @@
           <mat-form-field appearance="outline">
             <mat-label>Side *</mat-label>
             <mat-select formControlName="side">
-              <mat-option *ngFor="let s of sides" [value]="s">{{ s }}</mat-option>
+              <mat-option *ngFor="let s of sides" [value]="s">
+                <img [src]="sideIcons[s]" class="option-icon" alt="" />
+                {{ s }}
+              </mat-option>
             </mat-select>
             <mat-error *ngIf="form.get('side')?.hasError('required')">Le side est obligatoire</mat-error>
           </mat-form-field>
@@ -33,7 +39,10 @@
           <mat-form-field appearance="outline">
             <mat-label>Type *</mat-label>
             <mat-select formControlName="utilityType">
-              <mat-option *ngFor="let t of types" [value]="t">{{ t }}</mat-option>
+              <mat-option *ngFor="let t of types" [value]="t">
+                <img [src]="grenadeIcons[t]" class="option-icon" alt="" />
+                {{ t }}
+              </mat-option>
             </mat-select>
             <mat-error *ngIf="form.get('utilityType')?.hasError('required')">Le type est obligatoire</mat-error>
           </mat-form-field>

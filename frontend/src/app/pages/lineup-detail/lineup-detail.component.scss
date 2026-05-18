@@ -2,6 +2,23 @@
   max-width: 720px;
   margin: 0 auto;
 
+  .detail-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 4px;
+    border-radius: 2px;
+  }
+
+  .badge-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+
   .loading-spinner {
     display: flex;
     justify-content: center;

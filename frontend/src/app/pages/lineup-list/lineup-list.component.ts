@@ -15,7 +15,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Lineup, LineupFilter, Side, UtilityType } from '../../models/lineup.model';
 import { UTILITY_COLORS } from '../../models/utility-colors';
-import { CS2_MAPS } from '../../models/map.model';
+import { CS2_MAPS, SIDE_ICONS, GRENADE_ICONS, GameMap } from '../../models/map.model';
 import { LineupService } from '../../services/lineup.service';
 
 @Component({
@@ -36,9 +36,11 @@ export class LineupListComponent implements OnInit {
   loading = false;          // indicateur de chargement
   filterForm: FormGroup;    // formulaire réactif des filtres
 
-  maps = CS2_MAPS.map(m => m.name);
+  maps = CS2_MAPS;
   sides: Side[] = ['T', 'CT'];
   types: UtilityType[] = ['SMOKE', 'FLASH', 'MOLOTOV', 'HE'];
+  sideIcons = SIDE_ICONS;
+  grenadeIcons = GRENADE_ICONS;
 
   // Couleurs associées à chaque type (utilisées pour les badges dans le template)
   typeColors = UTILITY_COLORS;
@@ -87,5 +89,9 @@ export class LineupListComponent implements OnInit {
   // Réinitialise tous les filtres à leurs valeurs par défaut
   resetFilters(): void {
     this.filterForm.reset({ map: null, side: null, type: null, search: '' });
+  }
+
+  getMapIcon(mapName: string): string {
+    return this.maps.find(m => m.name === mapName)?.iconUrl ?? '';
   }
 }

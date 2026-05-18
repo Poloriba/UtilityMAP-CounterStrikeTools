@@ -12,15 +12,20 @@
       <span
         class="type-badge"
         [style.background-color]="typeColors[lineup.utilityType]"
-      >{{ lineup.utilityType }}</span>
+      >
+        <img [src]="grenadeIcons[lineup.utilityType]" class="badge-icon" alt="" />
+        {{ lineup.utilityType }}
+      </span>
     </div>
 
     <mat-card class="detail-card">
       <mat-card-header>
         <mat-card-subtitle>
-          <mat-icon>map</mat-icon> {{ lineup.mapName }}
+          <img [src]="getMapIcon(lineup.mapName)" class="detail-icon" alt="" />
+          {{ lineup.mapName }}
           &nbsp;|&nbsp;
-          <mat-icon>people</mat-icon> {{ lineup.side }}
+          <img [src]="sideIcons[lineup.side]" class="detail-icon" alt="" />
+          {{ lineup.side }}
         </mat-card-subtitle>
       </mat-card-header>
 

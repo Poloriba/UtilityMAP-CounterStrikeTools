@@ -40,7 +40,7 @@
             <mat-label>Type *</mat-label>
             <mat-select formControlName="utilityType">
               <mat-option *ngFor="let t of types" [value]="t">
-                <img [src]="grenadeIcons[t]" class="option-icon" alt="" />
+                <img [src]="grenadeIcons[t]" class="option-icon grenade" alt="" />
                 {{ t }}
               </mat-option>
             </mat-select>

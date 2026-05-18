@@ -172,4 +172,9 @@ html {
   vertical-align: middle;
   margin-right: 8px;
   border-radius: 2px;
+
+  &.grenade {
+    width: 33px;
+    height: 33px;
+  }
 }

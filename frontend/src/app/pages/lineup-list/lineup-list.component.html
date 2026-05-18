@@ -34,7 +34,7 @@
           <mat-select formControlName="type">
             <mat-option [value]="null">Tous</mat-option>
             <mat-option *ngFor="let t of types" [value]="t">
-              <img [src]="grenadeIcons[t]" class="option-icon" alt="" />
+              <img [src]="grenadeIcons[t]" class="option-icon grenade" alt="" />
               {{ t }}
             </mat-option>
           </mat-select>

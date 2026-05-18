@@ -154,3 +154,14 @@ html {
   padding: 24px;
   color: #eee;
 }
+
+// ========== ICONS DANS LES MAT-OPTION (overlay CDK) ==========
+.mat-mdc-option .option-icon,
+.cdk-overlay-container .option-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 8px;
+  border-radius: 2px;
+}

@@ -50,7 +50,7 @@
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Nom *</mat-label>
-          <input matInput formControlName="name" placeholder="Ex: Window smoke depuis T spawn" />
+          <input matInput formControlName="name" />
           <mat-error *ngIf="form.get('name')?.hasError('required')">Le nom est obligatoire</mat-error>
           <mat-error *ngIf="form.get('name')?.hasError('minlength')">Minimum 2 caractères</mat-error>
         </mat-form-field>
@@ -58,20 +58,20 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Description</mat-label>
           <textarea matInput formControlName="description" rows="3"
-            placeholder="Décrivez la lineup..."></textarea>
+            ></textarea>
         </mat-form-field>
 
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Position de lancer</mat-label>
             <mat-icon matPrefix>person_pin</mat-icon>
-            <input matInput formControlName="throwPosition" placeholder="Ex: T spawn ramp" />
+            <input matInput formControlName="throwPosition" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Point de visée</mat-label>
             <mat-icon matPrefix>ads_click</mat-icon>
-            <input matInput formControlName="aimPosition" placeholder="Ex: Coin toit window" />
+            <input matInput formControlName="aimPosition" />
           </mat-form-field>
         </div>
 
@@ -79,13 +79,13 @@
           <mat-form-field appearance="outline">
             <mat-label>URL Image</mat-label>
             <mat-icon matPrefix>image</mat-icon>
-            <input matInput formControlName="imageUrl" placeholder="https://..." />
+            <input matInput formControlName="imageUrl" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>URL Vidéo</mat-label>
             <mat-icon matPrefix>play_circle</mat-icon>
-            <input matInput formControlName="videoUrl" placeholder="https://youtube.com/..." />
+            <input matInput formControlName="videoUrl" />
           </mat-form-field>
         </div>
 

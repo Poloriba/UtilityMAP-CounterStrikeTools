@@ -25,7 +25,7 @@
     <div class="map-display" #mapDisplay>
 
       <!-- Image 2D de la map + zone de drag -->
-      <div #dragZone class="map-drag-zone" [class.link-mode]="selectedPlayerId !== null" [style.background-color]="selectedMap.color" (click)="onBackgroundClick()">
+      <div #dragZone class="map-drag-zone" [class.link-mode]="selectedPlayerId !== null" [style.background-color]="selectedMap.color" (click)="onBackgroundClick()" (keydown.escape)="onBackgroundClick()">
         <img
           *ngIf="!imageError"
           [src]="selectedMap.radarUrl"
@@ -57,6 +57,7 @@
           (cdkDragEnded)="onTokenDropped($event, player.id)"
           [matTooltip]="player.side + ' · Joueur ' + player.number"
           (click)="onPlayerClick(player.id); $event.stopPropagation()"
+          (keydown.enter)="onPlayerClick(player.id)"
         >
           {{ player.number }}
           <!-- Bouton × au survol pour éliminer le joueur -->
@@ -86,6 +87,7 @@
           (cdkDragEnded)="onTokenDropped($event, grenade.id)"
           [matTooltip]="grenade.name"
           (click)="onGrenadeClick(grenade.id); $event.stopPropagation()"
+          (keydown.enter)="onGrenadeClick(grenade.id)"
         >
           {{ grenade.label }}
           <!-- Bouton de suppression : apparaît au survol -->
@@ -139,6 +141,7 @@
               (mousemove)="onLinkMouseMove($event)"
               (mouseleave)="onLinkMouseLeave()"
               (click)="onLinkRightClick($event, link, linkMenuTrigger)"
+              (keydown.enter)="onLinkRightClick($event, link, linkMenuTrigger)"
             />
             <!-- Flèche visible : plus épaisse et colorée si une lineup est associée -->
             <line
@@ -178,7 +181,7 @@
           <button [matMenuTriggerFor]="lineupPickerMenu" #linkMenuTrigger="matMenuTrigger"></button>
         </div>
         <mat-menu #lineupPickerMenu="matMenu" class="lineup-picker-menu">
-          <div class="lineup-picker-header" (click)="$event.stopPropagation()">
+          <div class="lineup-picker-header" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
             Associer une lineup
           </div>
           <button mat-menu-item *ngFor="let lineup of linkMenuLineups" (click)="assignLineupToLink(lineup)">
@@ -189,7 +192,7 @@
             <mat-icon>link_off</mat-icon>
             Retirer la lineup
           </button>
-          <div *ngIf="linkMenuLineups.length === 0" class="no-lineups-hint" (click)="$event.stopPropagation()">
+          <div *ngIf="linkMenuLineups.length === 0" class="no-lineups-hint" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
             Aucune lineup de ce type sur cette map
           </div>
         </mat-menu>

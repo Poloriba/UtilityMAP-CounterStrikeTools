@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Subscription } from 'rxjs';
 import { PlaygroundComponent } from '../playground/playground.component';
 import { PlaygroundMobileComponent } from '../playground-mobile/playground-mobile.component';
@@ -23,7 +23,7 @@ import { PlaygroundMobileComponent } from '../playground-mobile/playground-mobil
 export class PlaygroundRouterComponent implements OnDestroy {
   private readonly observer = inject(BreakpointObserver);
   isMobile = false;
-  private sub: Subscription;
+  private readonly sub: Subscription;
 
   constructor() {
     this.sub = this.observer.observe('(max-width: 768px)').subscribe(state => {

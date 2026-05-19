@@ -15,7 +15,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Lineup, LineupFilter, Side, UtilityType } from '../../models/lineup.model';
 import { UTILITY_COLORS } from '../../models/utility-colors';
-import { CS2_MAPS, SIDE_ICONS, GRENADE_ICONS, GameMap } from '../../models/map.model';
+import { CS2_MAPS, SIDE_ICONS, GRENADE_ICONS } from '../../models/map.model';
 import { LineupService } from '../../services/lineup.service';
 
 @Component({
@@ -45,7 +45,7 @@ export class LineupListComponent implements OnInit {
   // Couleurs associées à chaque type (utilisées pour les badges dans le template)
   typeColors = UTILITY_COLORS;
 
-  constructor(private lineupService: LineupService, private fb: FormBuilder, private route: ActivatedRoute, private snackBar: MatSnackBar) {
+  constructor(private readonly lineupService: LineupService, private readonly fb: FormBuilder, private readonly route: ActivatedRoute, private readonly snackBar: MatSnackBar) {
     this.filterForm = this.fb.group({
       map: [null],
       side: [null],

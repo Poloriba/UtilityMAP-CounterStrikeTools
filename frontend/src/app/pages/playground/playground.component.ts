@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -19,7 +19,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CS2_MAPS, GameMap } from '../../models/map.model';
 import { Lineup } from '../../models/lineup.model';
-import { UTILITY_COLORS, UTILITY_COLORS_LIGHT } from '../../models/utility-colors';
+import { UTILITY_COLORS_LIGHT } from '../../models/utility-colors';
 import { Exec, ExecRequest, ExecSnapshot } from '../../models/exec.model';
 import { LineupService } from '../../services/lineup.service';
 import { ExecService } from '../../services/exec.service';
@@ -71,7 +71,7 @@ const GRENADE_DEFS = [
   styleUrls: ['./playground.component.scss']
 })
 /** Page Playground : tableau tactique interactif avec jetons, grenades, flèches et execs */
-export class PlaygroundComponent implements OnInit, AfterViewInit {
+export class PlaygroundComponent implements OnInit {
   maps = CS2_MAPS;               // liste de toutes les maps disponibles
   selectedMap: GameMap | null = null; // map actuellement affichée
   lineupCount = 0;               // nombre de lineups disponibles sur la map sélectionnée
@@ -151,12 +151,12 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
   execSaving = false;             // true pendant l'appel API de sauvegarde
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private lineupService: LineupService,
-    private execService: ExecService,
-    private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly lineupService: LineupService,
+    private readonly execService: ExecService,
+    private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -171,8 +171,6 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
       this.selectMap(this.maps[0]);
     }
   }
-
-  ngAfterViewInit(): void {}
 
   // --- Undo / Redo : raccourcis clavier ---
   @HostListener('window:keydown', ['$event'])
@@ -849,69 +847,7 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
       }
 
       // ===== LÉGENDE =====
-      const legendY = mapY + mapH + PADDING;
-
-      // Ligne de légende couleur joueurs
-      ctx.fillStyle = '#888';
-      ctx.font = '11px sans-serif';
-      ctx.textBaseline = 'middle';
-      const playerLegendY = legendY + 10;
-
-      // CT
-      ctx.beginPath();
-      ctx.arc(PADDING + 6, playerLegendY, 5, 0, Math.PI * 2);
-      ctx.fillStyle = '#42a5f5';
-      ctx.fill();
-      ctx.fillStyle = '#ccc';
-      ctx.fillText('CT', PADDING + 16, playerLegendY);
-
-      // T
-      ctx.beginPath();
-      ctx.arc(PADDING + 50, playerLegendY, 5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffa726';
-      ctx.fill();
-      ctx.fillStyle = '#ccc';
-      ctx.fillText('T', PADDING + 60, playerLegendY);
-
-      // Grenades legend
-      const grenadeTypes: Array<{ type: string; label: string; color: string }> = [
-        { type: 'smoke', label: 'Smoke', color: this.GRENADE_COLORS['smoke'] },
-        { type: 'flash', label: 'Flash', color: this.GRENADE_COLORS['flash'] },
-        { type: 'molotov', label: 'Molotov', color: this.GRENADE_COLORS['molotov'] },
-        { type: 'he', label: 'HE', color: this.GRENADE_COLORS['he'] },
-      ];
-      let gx = PADDING + 100;
-      for (const gt of grenadeTypes) {
-        ctx.fillStyle = gt.color;
-        ctx.fillRect(gx, playerLegendY - 5, 10, 10);
-        ctx.fillStyle = '#ccc';
-        ctx.font = '11px sans-serif';
-        ctx.fillText(gt.label, gx + 14, playerLegendY);
-        gx += ctx.measureText(gt.label).width + 30;
-      }
-
-      // Lineups associées
-      if (uniqueLineups.length > 0) {
-        const lineupsStartY = playerLegendY + 24;
-        ctx.fillStyle = '#ffd740';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText('Lineups associées :', PADDING, lineupsStartY);
-
-        ctx.font = '12px sans-serif';
-        uniqueLineups.forEach((l, i) => {
-          const ly = lineupsStartY + 20 + i * LEGEND_LINE_H;
-          const typeColor = this.GRENADE_COLORS[l.type.toLowerCase()] ?? '#888';
-          // Pastille type
-          ctx.fillStyle = typeColor;
-          ctx.fillRect(PADDING, ly - 5, 8, 12);
-          // Type
-          ctx.fillStyle = '#aaa';
-          ctx.fillText(l.type, PADDING + 14, ly + 1);
-          // Nom
-          ctx.fillStyle = '#e0e0e0';
-          ctx.fillText(l.name, PADDING + 70, ly + 1);
-        });
-      }
+      this.drawExportLegend(ctx, mapY + mapH + PADDING, PADDING, uniqueLineups);
 
       // Watermark
       ctx.fillStyle = '#555';
@@ -933,6 +869,72 @@ export class PlaygroundComponent implements OnInit, AfterViewInit {
       this.snackBar.open('Erreur lors de l\'export', 'Fermer', { duration: 3000 });
     } finally {
       this.exporting = false;
+    }
+  }
+
+  private drawExportLegend(
+    ctx: CanvasRenderingContext2D,
+    legendY: number,
+    padding: number,
+    uniqueLineups: { type: string; name: string }[]
+  ): void {
+    const LEGEND_LINE_H = 22;
+    ctx.fillStyle = '#888';
+    ctx.font = '11px sans-serif';
+    ctx.textBaseline = 'middle';
+    const playerLegendY = legendY + 10;
+
+    // CT
+    ctx.beginPath();
+    ctx.arc(padding + 6, playerLegendY, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#42a5f5';
+    ctx.fill();
+    ctx.fillStyle = '#ccc';
+    ctx.fillText('CT', padding + 16, playerLegendY);
+
+    // T
+    ctx.beginPath();
+    ctx.arc(padding + 50, playerLegendY, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffa726';
+    ctx.fill();
+    ctx.fillStyle = '#ccc';
+    ctx.fillText('T', padding + 60, playerLegendY);
+
+    // Grenades legend
+    const grenadeTypes: Array<{ type: string; label: string; color: string }> = [
+      { type: 'smoke', label: 'Smoke', color: this.GRENADE_COLORS['smoke'] },
+      { type: 'flash', label: 'Flash', color: this.GRENADE_COLORS['flash'] },
+      { type: 'molotov', label: 'Molotov', color: this.GRENADE_COLORS['molotov'] },
+      { type: 'he', label: 'HE', color: this.GRENADE_COLORS['he'] },
+    ];
+    let gx = padding + 100;
+    for (const gt of grenadeTypes) {
+      ctx.fillStyle = gt.color;
+      ctx.fillRect(gx, playerLegendY - 5, 10, 10);
+      ctx.fillStyle = '#ccc';
+      ctx.font = '11px sans-serif';
+      ctx.fillText(gt.label, gx + 14, playerLegendY);
+      gx += ctx.measureText(gt.label).width + 30;
+    }
+
+    // Lineups associées
+    if (uniqueLineups.length > 0) {
+      const lineupsStartY = playerLegendY + 24;
+      ctx.fillStyle = '#ffd740';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('Lineups associées :', padding, lineupsStartY);
+
+      ctx.font = '12px sans-serif';
+      uniqueLineups.forEach((l, i) => {
+        const ly = lineupsStartY + 20 + i * LEGEND_LINE_H;
+        const typeColor = this.GRENADE_COLORS[l.type.toLowerCase()] ?? '#888';
+        ctx.fillStyle = typeColor;
+        ctx.fillRect(padding, ly - 5, 8, 12);
+        ctx.fillStyle = '#aaa';
+        ctx.fillText(l.type, padding + 14, ly + 1);
+        ctx.fillStyle = '#e0e0e0';
+        ctx.fillText(l.name, padding + 70, ly + 1);
+      });
     }
   }
 }

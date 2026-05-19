@@ -48,13 +48,13 @@ export class LineupDetailComponent implements OnInit {
   maps = CS2_MAPS;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private lineupService: LineupService,
-    private favoriteService: FavoriteService,
-    private execService: ExecService,
-    private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly lineupService: LineupService,
+    private readonly favoriteService: FavoriteService,
+    private readonly execService: ExecService,
+    private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog
   ) {}
 
   ngOnInit(): void {

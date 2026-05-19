@@ -40,11 +40,11 @@ export class LineupFormComponent implements OnInit {
   grenadeIcons = GRENADE_ICONS;
 
   constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private lineupService: LineupService,
-    private snackBar: MatSnackBar
+    private readonly fb: FormBuilder,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly lineupService: LineupService,
+    private readonly snackBar: MatSnackBar
   ) {
     this.form = this.fb.group({
       mapName: [null, Validators.required],

@@ -61,24 +61,8 @@
   --chip-flash-bg: #f9a825; --chip-flash-text: #333;
   --chip-molotov-bg: #b71c1c; --chip-molotov-text: #ef9a9a;
   --chip-he-bg: #1b5e20; --chip-he-text: #a5d6a7;
-}
 
-// ========== BASE STYLES ==========
-html, body {
-  height: 100%;
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s, color 0.3s;
-}
-
-html {
-  background-color: var(--bg-primary);
-}
-
-// ========== MATERIAL OVERRIDES (dark-theme) ==========
-.dark-theme {
+  // ========== MATERIAL OVERRIDES ==========
   // Cards
   .mat-mdc-card {
     background: var(--bg-card) !important;
@@ -152,6 +136,18 @@ html {
 
   // Chips
   .mat-mdc-chip { border: 1px solid var(--border-color); }
+}
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+html {
+  background-color: var(--bg-primary);
 }
 
 // Playground fond sombre (toujours)

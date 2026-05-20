@@ -435,12 +435,14 @@ export class PlaygroundComponent implements OnInit {
   }
 
   // Clic gauche sur une flèche : ouvre le menu de sélection de lineup positionné au curseur
-  onLinkRightClick(event: MouseEvent, link: { playerId: string; grenadeId: string; lineupId?: string }, trigger: MatMenuTrigger): void {
+  onLinkRightClick(event: Event, link: { playerId: string; grenadeId: string; lineupId?: string }, trigger: MatMenuTrigger): void {
     event.stopPropagation();
     // Positionne le trigger invisible par rapport à la drag zone
     const zone = this.dragZoneRef.nativeElement;
     const rect = zone.getBoundingClientRect();
-    this.menuPos = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    if (event instanceof MouseEvent) {
+      this.menuPos = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    }
     this.onLinkMouseLeave(); // ferme le popup de preview
     // Prépare le menu
     const grenadeType = this.getGrenadeType(link.grenadeId)?.toUpperCase();
